@@ -32,15 +32,15 @@ def arg_as_string(a: WLArgument) -> String:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    var ptr = UnsafePointer[Int8, MutAnyOrigin](unsafe_from_address=addr)
+    var ptr = UnsafePointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
     return String(CStringSlice(unsafe_from_ptr=ptr))
 
 
-def arg_as_cptr(a: WLArgument) -> UnsafePointer[Int8, MutAnyOrigin]:
+def arg_as_cptr(a: WLArgument) -> UnsafePointer[Int8, MutUntrackedOrigin]:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    return UnsafePointer[Int8, MutAnyOrigin](unsafe_from_address=addr)
+    return UnsafePointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
 
 
 def arg_as_uint(a: WLArgument) -> UInt32:
@@ -91,7 +91,7 @@ def main() raises:
             "version =", arg_as_int(args[2]),
         )
         # rebuild the byte pointer for free (shim hands back malloc'd copies)
-    _shim_string_free(UnsafePointer[Byte, MutAnyOrigin](unsafe_from_address=Int(arg_as_cptr(args[1]))))
+    _shim_string_free(UnsafePointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(arg_as_cptr(args[1]))))
     print("globals received:", count)
 
     # roundtrip to prove the request path works

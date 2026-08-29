@@ -4,12 +4,40 @@ version = "0.1.0"
 description = "Mojo bindings for libwayland-client, generated from protocol XML"
 channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://prefix.dev/modular-community"]
 platforms = ["linux-64"]
+preview = ["pixi-build"]
+
+
+[package]
+name = "mojo-wayland"
+version = "0.1.0"
+
+[package.build.backend]
+name = "pixi-build-mojo"
+version = ">=0.2.7,<0.3"
+channels = [
+    "https://prefix.dev/pixi-build-backends",
+    "conda-forge"
+]
+
+# The Mojo package dir is `wayland/`, not `mojo_wayland/` — point the backend
+# at it explicitly (auto-derive only checks <project_name>/ and src/).
+[package.build.config]
+pkg = { name = "wayland", path = "wayland" }
+
+# The backend's build script runs `mojo precompile/package`, which needs the
+# compiler on PATH inside the isolated build env.
+[package.host-dependencies]
+mojo = "==1.0.0"
+
+[package.run-dependencies]
+mojo = "==1.0.0"
 
 [dependencies]
 # Pin the same Mojo the library was written against; 1.1.0.dev renames
 # UnsafePointer -> Pointer, InlineArray import rules, etc.
-mojo = "==1.0.0b2"
-python = "*"
+mojo = "==1.0.0"
+python = ">=3.11"
+# mojo-wayland = { path = "." }
 
 [tasks]
 # Generate Mojo bindings from protocol XML(s).

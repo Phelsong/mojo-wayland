@@ -90,13 +90,13 @@ comptime STRIDE = WIDTH * 4
 comptime POOL_SIZE = STRIDE * HEIGHT
 
 
-def str_to_cptr(s: String) -> UnsafePointer[Int8, MutAnyOrigin]:
+def str_to_cptr(s: String) -> UnsafePointer[Int8, MutUntrackedOrigin]:
     """NUL-terminated heap copy of a Mojo String (leaked — test lifetime)."""
     # copy into a mutable local so as_c_string_slice is usable
     var tmp: String = s
     var cs = tmp.as_c_string_slice()
     var n = len(cs)
-    var buf = UnsafePointer[Int8, MutAnyOrigin](unsafe_from_address=Int(_malloc(Int(n) + 1)))
+    var buf = UnsafePointer[Int8, MutUntrackedOrigin](unsafe_from_address=Int(_malloc(Int(n) + 1)))
     var bytes = tmp.as_bytes()
     for i in range(len(bytes)):
         buf[i] = Int8(bytes[i])
@@ -112,15 +112,15 @@ def arg_as_string(a: WLArgument) -> String:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    var ptr = UnsafePointer[Int8, MutAnyOrigin](unsafe_from_address=addr)
+    var ptr = UnsafePointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
     return String(CStringSlice(unsafe_from_ptr=ptr))
 
 
-def arg_as_cptr(a: WLArgument) -> UnsafePointer[Byte, MutAnyOrigin]:
+def arg_as_cptr(a: WLArgument) -> UnsafePointer[Byte, MutUntrackedOrigin]:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    return UnsafePointer[Byte, MutAnyOrigin](unsafe_from_address=addr)
+    return UnsafePointer[Byte, MutUntrackedOrigin](unsafe_from_address=addr)
 
 
 def arg_as_uint(a: WLArgument) -> UInt32:
@@ -160,7 +160,7 @@ def find_global(queue: WLPtr, display: WLPtr, want: String) raises -> GlobalInfo
 
 def store_pixel(base: WLPtr, offset: Int, r: UInt8, g: UInt8, b: UInt8):
     # ARGB8888 little-endian: B, G, R, X byte order in memory
-    var p = UnsafePointer[UInt8, MutAnyOrigin](unsafe_from_address=Int(base) + offset)
+    var p = UnsafePointer[UInt8, MutUntrackedOrigin](unsafe_from_address=Int(base) + offset)
     p[0] = b
     p[1] = g
     p[2] = r

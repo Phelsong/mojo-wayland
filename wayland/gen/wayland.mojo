@@ -28,17 +28,17 @@ def wl_display_get_registry(self: WLPtr) raises -> WLPtr:
     return _proxy_constructor_versioned(self, 1, args_array, "wl_registry", 1)
 
 
-def wl_display_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_display_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_display and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_display", out_queue)
 
-def wl_display_next_error(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_display_next_error(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending error event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_display_next_delete_id(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_display_next_delete_id(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending delete_id event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
@@ -57,17 +57,17 @@ def wl_registry_bind(self: WLPtr, iface: WLPtr, iface_name: WLString, name: UInt
     return wl_proxy_marshal_array_constructor_versioned(self, 0, args_array, iface, version)
 
 
-def wl_registry_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_registry_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_registry and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_registry", out_queue)
 
-def wl_registry_next_global(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_registry_next_global(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending global event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_registry_next_global_remove(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_registry_next_global_remove(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending global_remove event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
@@ -75,12 +75,12 @@ def wl_registry_next_global_remove(queue: WLPtr, out_args: UnsafePointer[WLArgum
 # ---- wl_callback v1 ----
 comptime CALLBACK_DONE_OP: UInt32 = 0
 
-def wl_callback_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_callback_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_callback and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_callback", out_queue)
 
-def wl_callback_next_done(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_callback_next_done(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending done event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
@@ -313,12 +313,12 @@ def wl_shm_release(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_shm_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_shm_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_shm and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_shm", out_queue)
 
-def wl_shm_next_format(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_shm_next_format(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending format event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
@@ -333,7 +333,7 @@ def wl_buffer_destroy(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_buffer_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_buffer_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_buffer and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_buffer", out_queue)
@@ -391,22 +391,22 @@ def wl_data_offer_set_actions(self: WLPtr, dnd_actions: UInt32, preferred_action
     wl_proxy_marshal_array(self, 4, args_array)
 
 
-def wl_data_offer_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_data_offer_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_data_offer and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_data_offer", out_queue)
 
-def wl_data_offer_next_offer(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_data_offer_next_offer(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending offer event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_data_offer_next_source_actions(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_data_offer_next_source_actions(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending source_actions event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
 
-def wl_data_offer_next_action(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_data_offer_next_action(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending action event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 2, out_args)
     return rc == 2
@@ -443,17 +443,17 @@ def wl_data_source_set_actions(self: WLPtr, dnd_actions: UInt32):
     wl_proxy_marshal_array(self, 2, args_array)
 
 
-def wl_data_source_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_data_source_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_data_source and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_data_source", out_queue)
 
-def wl_data_source_next_target(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_data_source_next_target(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending target event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_data_source_next_send(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_data_source_next_send(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending send event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
@@ -476,7 +476,7 @@ def wl_data_source_next_dnd_finished(queue: WLPtr) -> Bool:
     var rc = _shim_event_pop(queue, 4, scratch)
     return rc == 4
 
-def wl_data_source_next_action(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_data_source_next_action(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending action event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 5, out_args)
     return rc == 5
@@ -492,7 +492,7 @@ comptime DATA_DEVICE_SELECTION_OP: UInt32 = 5
 comptime DATA_DEVICE_ERROR_ROLE: UInt32 = 0
 comptime DATA_DEVICE_ERROR_USED_SOURCE: UInt32 = 1
 
-def wl_data_device_start_drag(self: WLPtr, source: UnsafePointer[NoneType, MutAnyOrigin], origin: UnsafePointer[NoneType, MutAnyOrigin], icon: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32):
+def wl_data_device_start_drag(self: WLPtr, source: UnsafePointer[NoneType, MutUntrackedOrigin], origin: UnsafePointer[NoneType, MutUntrackedOrigin], icon: UnsafePointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 0
     var args_array = stack_allocation[4, WLArgument]()
     args_array[0] = WLArgument.make_o(source)
@@ -502,7 +502,7 @@ def wl_data_device_start_drag(self: WLPtr, source: UnsafePointer[NoneType, MutAn
     wl_proxy_marshal_array(self, 0, args_array)
 
 
-def wl_data_device_set_selection(self: WLPtr, source: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32):
+def wl_data_device_set_selection(self: WLPtr, source: UnsafePointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 1
     var args_array = stack_allocation[2, WLArgument]()
     args_array[0] = WLArgument.make_o(source)
@@ -517,7 +517,7 @@ def wl_data_device_release(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_data_device_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_data_device_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_data_device and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_data_device", out_queue)
@@ -528,7 +528,7 @@ def wl_data_device_next_data_offer(queue: WLPtr) -> Bool:
     var rc = _shim_event_pop(queue, 0, scratch)
     return rc == 0
 
-def wl_data_device_next_enter(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_data_device_next_enter(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending enter event into out_args (len 5). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
@@ -539,7 +539,7 @@ def wl_data_device_next_leave(queue: WLPtr) -> Bool:
     var rc = _shim_event_pop(queue, 2, scratch)
     return rc == 2
 
-def wl_data_device_next_motion(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_data_device_next_motion(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending motion event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 3, out_args)
     return rc == 3
@@ -550,7 +550,7 @@ def wl_data_device_next_drop(queue: WLPtr) -> Bool:
     var rc = _shim_event_pop(queue, 4, scratch)
     return rc == 4
 
-def wl_data_device_next_selection(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_data_device_next_selection(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending selection event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 5, out_args)
     return rc == 5
@@ -569,7 +569,7 @@ def wl_data_device_manager_create_data_source(self: WLPtr) raises -> WLPtr:
     return _proxy_constructor_versioned(self, 0, args_array, "wl_data_source", 4)
 
 
-def wl_data_device_manager_get_data_device(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin]) raises -> WLPtr:
+def wl_data_device_manager_get_data_device(self: WLPtr, seat: UnsafePointer[NoneType, MutUntrackedOrigin]) raises -> WLPtr:
     # opcode 1: get_data_device
     # opcode 1: get_data_device, creates wl_data_device
     # slots follow wire-signature positions (new_id slot zeroed)
@@ -588,7 +588,7 @@ def wl_data_device_manager_release(self: WLPtr):
 # ---- wl_shell v1 ----
 comptime SHELL_ERROR_ROLE: UInt32 = 0
 
-def wl_shell_get_shell_surface(self: WLPtr, surface: UnsafePointer[NoneType, MutAnyOrigin]) raises -> WLPtr:
+def wl_shell_get_shell_surface(self: WLPtr, surface: UnsafePointer[NoneType, MutUntrackedOrigin]) raises -> WLPtr:
     # opcode 0: get_shell_surface
     # opcode 0: get_shell_surface, creates wl_shell_surface
     # slots follow wire-signature positions (new_id slot zeroed)
@@ -626,7 +626,7 @@ def wl_shell_surface_pong(self: WLPtr, serial: UInt32):
     wl_proxy_marshal_array(self, 0, args_array)
 
 
-def wl_shell_surface_move(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32):
+def wl_shell_surface_move(self: WLPtr, seat: UnsafePointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 1
     var args_array = stack_allocation[2, WLArgument]()
     args_array[0] = WLArgument.make_o(seat)
@@ -634,7 +634,7 @@ def wl_shell_surface_move(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigi
     wl_proxy_marshal_array(self, 1, args_array)
 
 
-def wl_shell_surface_resize(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32, edges: UInt32):
+def wl_shell_surface_resize(self: WLPtr, seat: UnsafePointer[NoneType, MutUntrackedOrigin], serial: UInt32, edges: UInt32):
     # opcode 2
     var args_array = stack_allocation[3, WLArgument]()
     args_array[0] = WLArgument.make_o(seat)
@@ -649,7 +649,7 @@ def wl_shell_surface_set_toplevel(self: WLPtr):
     wl_proxy_marshal_array(self, 3, args_array)
 
 
-def wl_shell_surface_set_transient(self: WLPtr, parent: UnsafePointer[NoneType, MutAnyOrigin], x: Int32, y: Int32, flags: UInt32):
+def wl_shell_surface_set_transient(self: WLPtr, parent: UnsafePointer[NoneType, MutUntrackedOrigin], x: Int32, y: Int32, flags: UInt32):
     # opcode 4
     var args_array = stack_allocation[4, WLArgument]()
     args_array[0] = WLArgument.make_o(parent)
@@ -659,7 +659,7 @@ def wl_shell_surface_set_transient(self: WLPtr, parent: UnsafePointer[NoneType, 
     wl_proxy_marshal_array(self, 4, args_array)
 
 
-def wl_shell_surface_set_fullscreen(self: WLPtr, method: UInt32, framerate: UInt32, output: UnsafePointer[NoneType, MutAnyOrigin]):
+def wl_shell_surface_set_fullscreen(self: WLPtr, method: UInt32, framerate: UInt32, output: UnsafePointer[NoneType, MutUntrackedOrigin]):
     # opcode 5
     var args_array = stack_allocation[3, WLArgument]()
     args_array[0] = WLArgument.make_u(method)
@@ -668,7 +668,7 @@ def wl_shell_surface_set_fullscreen(self: WLPtr, method: UInt32, framerate: UInt
     wl_proxy_marshal_array(self, 5, args_array)
 
 
-def wl_shell_surface_set_popup(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32, parent: UnsafePointer[NoneType, MutAnyOrigin], x: Int32, y: Int32, flags: UInt32):
+def wl_shell_surface_set_popup(self: WLPtr, seat: UnsafePointer[NoneType, MutUntrackedOrigin], serial: UInt32, parent: UnsafePointer[NoneType, MutUntrackedOrigin], x: Int32, y: Int32, flags: UInt32):
     # opcode 6
     var args_array = stack_allocation[6, WLArgument]()
     args_array[0] = WLArgument.make_o(seat)
@@ -680,7 +680,7 @@ def wl_shell_surface_set_popup(self: WLPtr, seat: UnsafePointer[NoneType, MutAny
     wl_proxy_marshal_array(self, 6, args_array)
 
 
-def wl_shell_surface_set_maximized(self: WLPtr, output: UnsafePointer[NoneType, MutAnyOrigin]):
+def wl_shell_surface_set_maximized(self: WLPtr, output: UnsafePointer[NoneType, MutUntrackedOrigin]):
     # opcode 7
     var args_array = stack_allocation[1, WLArgument]()
     args_array[0] = WLArgument.make_o(output)
@@ -701,17 +701,17 @@ def wl_shell_surface_set_class(self: WLPtr, class_: WLString):
     wl_proxy_marshal_array(self, 9, args_array)
 
 
-def wl_shell_surface_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_shell_surface_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_shell_surface and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_shell_surface", out_queue)
 
-def wl_shell_surface_next_ping(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_shell_surface_next_ping(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending ping event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_shell_surface_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_shell_surface_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending configure event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
@@ -742,7 +742,7 @@ def wl_surface_destroy(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_surface_attach(self: WLPtr, buffer: UnsafePointer[NoneType, MutAnyOrigin], x: Int32, y: Int32):
+def wl_surface_attach(self: WLPtr, buffer: UnsafePointer[NoneType, MutUntrackedOrigin], x: Int32, y: Int32):
     # opcode 1
     var args_array = stack_allocation[3, WLArgument]()
     args_array[0] = WLArgument.make_o(buffer)
@@ -769,14 +769,14 @@ def wl_surface_frame(self: WLPtr) raises -> WLPtr:
     return _proxy_constructor_versioned(self, 3, args_array, "wl_callback", 7)
 
 
-def wl_surface_set_opaque_region(self: WLPtr, region: UnsafePointer[NoneType, MutAnyOrigin]):
+def wl_surface_set_opaque_region(self: WLPtr, region: UnsafePointer[NoneType, MutUntrackedOrigin]):
     # opcode 4
     var args_array = stack_allocation[1, WLArgument]()
     args_array[0] = WLArgument.make_o(region)
     wl_proxy_marshal_array(self, 4, args_array)
 
 
-def wl_surface_set_input_region(self: WLPtr, region: UnsafePointer[NoneType, MutAnyOrigin]):
+def wl_surface_set_input_region(self: WLPtr, region: UnsafePointer[NoneType, MutUntrackedOrigin]):
     # opcode 5
     var args_array = stack_allocation[1, WLArgument]()
     args_array[0] = WLArgument.make_o(region)
@@ -829,27 +829,27 @@ def wl_surface_get_release(self: WLPtr) raises -> WLPtr:
     return _proxy_constructor_versioned(self, 11, args_array, "wl_callback", 7)
 
 
-def wl_surface_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_surface_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_surface and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_surface", out_queue)
 
-def wl_surface_next_enter(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_surface_next_enter(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending enter event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_surface_next_leave(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_surface_next_leave(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending leave event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
 
-def wl_surface_next_preferred_buffer_scale(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_surface_next_preferred_buffer_scale(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending preferred_buffer_scale event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 2, out_args)
     return rc == 2
 
-def wl_surface_next_preferred_buffer_transform(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_surface_next_preferred_buffer_transform(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending preferred_buffer_transform event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 3, out_args)
     return rc == 3
@@ -895,17 +895,17 @@ def wl_seat_release(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_seat_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_seat_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_seat and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_seat", out_queue)
 
-def wl_seat_next_capabilities(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_seat_next_capabilities(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending capabilities event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_seat_next_name(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_seat_next_name(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending name event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
@@ -940,7 +940,7 @@ comptime POINTER_AXIS_SOURCE_WHEEL_TILT: UInt32 = 3
 comptime POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL: UInt32 = 0
 comptime POINTER_AXIS_RELATIVE_DIRECTION_INVERTED: UInt32 = 1
 
-def wl_pointer_set_cursor(self: WLPtr, serial: UInt32, surface: UnsafePointer[NoneType, MutAnyOrigin], hotspot_x: Int32, hotspot_y: Int32):
+def wl_pointer_set_cursor(self: WLPtr, serial: UInt32, surface: UnsafePointer[NoneType, MutUntrackedOrigin], hotspot_x: Int32, hotspot_y: Int32):
     # opcode 0
     var args_array = stack_allocation[4, WLArgument]()
     args_array[0] = WLArgument.make_u(serial)
@@ -957,32 +957,32 @@ def wl_pointer_release(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_pointer_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_pointer_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_pointer and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_pointer", out_queue)
 
-def wl_pointer_next_enter(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_enter(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending enter event into out_args (len 4). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_pointer_next_leave(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_leave(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending leave event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
 
-def wl_pointer_next_motion(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_motion(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending motion event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 2, out_args)
     return rc == 2
 
-def wl_pointer_next_button(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_button(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending button event into out_args (len 4). False = none."""
     var rc = _shim_event_pop(queue, 3, out_args)
     return rc == 3
 
-def wl_pointer_next_axis(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_axis(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending axis event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 4, out_args)
     return rc == 4
@@ -993,32 +993,32 @@ def wl_pointer_next_frame(queue: WLPtr) -> Bool:
     var rc = _shim_event_pop(queue, 5, scratch)
     return rc == 5
 
-def wl_pointer_next_axis_source(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_axis_source(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending axis_source event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 6, out_args)
     return rc == 6
 
-def wl_pointer_next_axis_stop(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_axis_stop(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending axis_stop event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 7, out_args)
     return rc == 7
 
-def wl_pointer_next_axis_discrete(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_axis_discrete(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending axis_discrete event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 8, out_args)
     return rc == 8
 
-def wl_pointer_next_axis_value120(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_axis_value120(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending axis_value120 event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 9, out_args)
     return rc == 9
 
-def wl_pointer_next_axis_relative_direction(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_axis_relative_direction(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending axis_relative_direction event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 10, out_args)
     return rc == 10
 
-def wl_pointer_next_warp(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_pointer_next_warp(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending warp event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 11, out_args)
     return rc == 11
@@ -1045,37 +1045,37 @@ def wl_keyboard_release(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_keyboard_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_keyboard_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_keyboard and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_keyboard", out_queue)
 
-def wl_keyboard_next_keymap(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_keyboard_next_keymap(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending keymap event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_keyboard_next_enter(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_keyboard_next_enter(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending enter event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
 
-def wl_keyboard_next_leave(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_keyboard_next_leave(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending leave event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 2, out_args)
     return rc == 2
 
-def wl_keyboard_next_key(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_keyboard_next_key(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending key event into out_args (len 4). False = none."""
     var rc = _shim_event_pop(queue, 3, out_args)
     return rc == 3
 
-def wl_keyboard_next_modifiers(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_keyboard_next_modifiers(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending modifiers event into out_args (len 5). False = none."""
     var rc = _shim_event_pop(queue, 4, out_args)
     return rc == 4
 
-def wl_keyboard_next_repeat_info(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_keyboard_next_repeat_info(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending repeat_info event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 5, out_args)
     return rc == 5
@@ -1096,22 +1096,22 @@ def wl_touch_release(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_touch_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_touch_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_touch and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_touch", out_queue)
 
-def wl_touch_next_down(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_touch_next_down(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending down event into out_args (len 6). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_touch_next_up(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_touch_next_up(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending up event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
 
-def wl_touch_next_motion(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_touch_next_motion(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending motion event into out_args (len 4). False = none."""
     var rc = _shim_event_pop(queue, 2, out_args)
     return rc == 2
@@ -1128,12 +1128,12 @@ def wl_touch_next_cancel(queue: WLPtr) -> Bool:
     var rc = _shim_event_pop(queue, 4, scratch)
     return rc == 4
 
-def wl_touch_next_shape(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_touch_next_shape(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending shape event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 5, out_args)
     return rc == 5
 
-def wl_touch_next_orientation(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_touch_next_orientation(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending orientation event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 6, out_args)
     return rc == 6
@@ -1172,17 +1172,17 @@ def wl_output_release(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_output_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def wl_output_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on wl_output and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "wl_output", out_queue)
 
-def wl_output_next_geometry(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_output_next_geometry(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending geometry event into out_args (len 8). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
 
-def wl_output_next_mode(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_output_next_mode(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending mode event into out_args (len 4). False = none."""
     var rc = _shim_event_pop(queue, 1, out_args)
     return rc == 1
@@ -1193,17 +1193,17 @@ def wl_output_next_done(queue: WLPtr) -> Bool:
     var rc = _shim_event_pop(queue, 2, scratch)
     return rc == 2
 
-def wl_output_next_scale(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_output_next_scale(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending scale event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 3, out_args)
     return rc == 3
 
-def wl_output_next_name(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_output_next_name(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending name event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 4, out_args)
     return rc == 4
 
-def wl_output_next_description(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def wl_output_next_description(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending description event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 5, out_args)
     return rc == 5
@@ -1247,7 +1247,7 @@ def wl_subcompositor_destroy(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_subcompositor_get_subsurface(self: WLPtr, surface: UnsafePointer[NoneType, MutAnyOrigin], parent: UnsafePointer[NoneType, MutAnyOrigin]) raises -> WLPtr:
+def wl_subcompositor_get_subsurface(self: WLPtr, surface: UnsafePointer[NoneType, MutUntrackedOrigin], parent: UnsafePointer[NoneType, MutUntrackedOrigin]) raises -> WLPtr:
     # opcode 1: get_subsurface
     # opcode 1: get_subsurface, creates wl_subsurface
     # slots follow wire-signature positions (new_id slot zeroed)
@@ -1275,14 +1275,14 @@ def wl_subsurface_set_position(self: WLPtr, x: Int32, y: Int32):
     wl_proxy_marshal_array(self, 1, args_array)
 
 
-def wl_subsurface_place_above(self: WLPtr, sibling: UnsafePointer[NoneType, MutAnyOrigin]):
+def wl_subsurface_place_above(self: WLPtr, sibling: UnsafePointer[NoneType, MutUntrackedOrigin]):
     # opcode 2
     var args_array = stack_allocation[1, WLArgument]()
     args_array[0] = WLArgument.make_o(sibling)
     wl_proxy_marshal_array(self, 2, args_array)
 
 
-def wl_subsurface_place_below(self: WLPtr, sibling: UnsafePointer[NoneType, MutAnyOrigin]):
+def wl_subsurface_place_below(self: WLPtr, sibling: UnsafePointer[NoneType, MutUntrackedOrigin]):
     # opcode 3
     var args_array = stack_allocation[1, WLArgument]()
     args_array[0] = WLArgument.make_o(sibling)
@@ -1311,14 +1311,14 @@ def wl_fixes_destroy(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def wl_fixes_destroy_registry(self: WLPtr, registry: UnsafePointer[NoneType, MutAnyOrigin]):
+def wl_fixes_destroy_registry(self: WLPtr, registry: UnsafePointer[NoneType, MutUntrackedOrigin]):
     # opcode 1
     var args_array = stack_allocation[1, WLArgument]()
     args_array[0] = WLArgument.make_o(registry)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
-def wl_fixes_ack_global_remove(self: WLPtr, registry: UnsafePointer[NoneType, MutAnyOrigin], name: UInt32):
+def wl_fixes_ack_global_remove(self: WLPtr, registry: UnsafePointer[NoneType, MutUntrackedOrigin], name: UInt32):
     # opcode 2
     var args_array = stack_allocation[2, WLArgument]()
     args_array[0] = WLArgument.make_o(registry)

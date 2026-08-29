@@ -29,7 +29,7 @@ def xdg_wm_base_create_positioner(self: WLPtr) raises -> WLPtr:
     return _proxy_constructor_versioned(self, 1, args_array, "xdg_positioner", 7)
 
 
-def xdg_wm_base_get_xdg_surface(self: WLPtr, surface: UnsafePointer[NoneType, MutAnyOrigin]) raises -> WLPtr:
+def xdg_wm_base_get_xdg_surface(self: WLPtr, surface: UnsafePointer[NoneType, MutUntrackedOrigin]) raises -> WLPtr:
     # opcode 2: get_xdg_surface
     # opcode 2: get_xdg_surface, creates xdg_surface
     # slots follow wire-signature positions (new_id slot zeroed)
@@ -45,12 +45,12 @@ def xdg_wm_base_pong(self: WLPtr, serial: UInt32):
     wl_proxy_marshal_array(self, 3, args_array)
 
 
-def xdg_wm_base_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def xdg_wm_base_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on xdg_wm_base and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "xdg_wm_base", out_queue)
 
-def xdg_wm_base_next_ping(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def xdg_wm_base_next_ping(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending ping event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
@@ -186,7 +186,7 @@ def xdg_surface_get_toplevel(self: WLPtr) raises -> WLPtr:
     return _proxy_constructor_versioned(self, 1, args_array, "xdg_toplevel", 7)
 
 
-def xdg_surface_get_popup(self: WLPtr, parent: UnsafePointer[NoneType, MutAnyOrigin], positioner: UnsafePointer[NoneType, MutAnyOrigin]) raises -> WLPtr:
+def xdg_surface_get_popup(self: WLPtr, parent: UnsafePointer[NoneType, MutUntrackedOrigin], positioner: UnsafePointer[NoneType, MutUntrackedOrigin]) raises -> WLPtr:
     # opcode 2: get_popup
     # opcode 2: get_popup, creates xdg_popup
     # slots follow wire-signature positions (new_id slot zeroed)
@@ -213,12 +213,12 @@ def xdg_surface_ack_configure(self: WLPtr, serial: UInt32):
     wl_proxy_marshal_array(self, 4, args_array)
 
 
-def xdg_surface_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def xdg_surface_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on xdg_surface and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "xdg_surface", out_queue)
 
-def xdg_surface_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def xdg_surface_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending configure event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
@@ -269,7 +269,7 @@ def xdg_toplevel_destroy(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def xdg_toplevel_set_parent(self: WLPtr, parent: UnsafePointer[NoneType, MutAnyOrigin]):
+def xdg_toplevel_set_parent(self: WLPtr, parent: UnsafePointer[NoneType, MutUntrackedOrigin]):
     # opcode 1
     var args_array = stack_allocation[1, WLArgument]()
     args_array[0] = WLArgument.make_o(parent)
@@ -290,7 +290,7 @@ def xdg_toplevel_set_app_id(self: WLPtr, app_id: WLString):
     wl_proxy_marshal_array(self, 3, args_array)
 
 
-def xdg_toplevel_show_window_menu(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32, x: Int32, y: Int32):
+def xdg_toplevel_show_window_menu(self: WLPtr, seat: UnsafePointer[NoneType, MutUntrackedOrigin], serial: UInt32, x: Int32, y: Int32):
     # opcode 4
     var args_array = stack_allocation[4, WLArgument]()
     args_array[0] = WLArgument.make_o(seat)
@@ -300,7 +300,7 @@ def xdg_toplevel_show_window_menu(self: WLPtr, seat: UnsafePointer[NoneType, Mut
     wl_proxy_marshal_array(self, 4, args_array)
 
 
-def xdg_toplevel_move(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32):
+def xdg_toplevel_move(self: WLPtr, seat: UnsafePointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 5
     var args_array = stack_allocation[2, WLArgument]()
     args_array[0] = WLArgument.make_o(seat)
@@ -308,7 +308,7 @@ def xdg_toplevel_move(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], 
     wl_proxy_marshal_array(self, 5, args_array)
 
 
-def xdg_toplevel_resize(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32, edges: UInt32):
+def xdg_toplevel_resize(self: WLPtr, seat: UnsafePointer[NoneType, MutUntrackedOrigin], serial: UInt32, edges: UInt32):
     # opcode 6
     var args_array = stack_allocation[3, WLArgument]()
     args_array[0] = WLArgument.make_o(seat)
@@ -345,7 +345,7 @@ def xdg_toplevel_unset_maximized(self: WLPtr):
     wl_proxy_marshal_array(self, 10, args_array)
 
 
-def xdg_toplevel_set_fullscreen(self: WLPtr, output: UnsafePointer[NoneType, MutAnyOrigin]):
+def xdg_toplevel_set_fullscreen(self: WLPtr, output: UnsafePointer[NoneType, MutUntrackedOrigin]):
     # opcode 11
     var args_array = stack_allocation[1, WLArgument]()
     args_array[0] = WLArgument.make_o(output)
@@ -364,12 +364,12 @@ def xdg_toplevel_set_minimized(self: WLPtr):
     wl_proxy_marshal_array(self, 13, args_array)
 
 
-def xdg_toplevel_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def xdg_toplevel_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on xdg_toplevel and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "xdg_toplevel", out_queue)
 
-def xdg_toplevel_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def xdg_toplevel_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending configure event into out_args (len 3). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
@@ -380,12 +380,12 @@ def xdg_toplevel_next_close(queue: WLPtr) -> Bool:
     var rc = _shim_event_pop(queue, 1, scratch)
     return rc == 1
 
-def xdg_toplevel_next_configure_bounds(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def xdg_toplevel_next_configure_bounds(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending configure_bounds event into out_args (len 2). False = none."""
     var rc = _shim_event_pop(queue, 2, out_args)
     return rc == 2
 
-def xdg_toplevel_next_wm_capabilities(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def xdg_toplevel_next_wm_capabilities(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending wm_capabilities event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 3, out_args)
     return rc == 3
@@ -404,7 +404,7 @@ def xdg_popup_destroy(self: WLPtr):
     wl_proxy_destroy(self)
 
 
-def xdg_popup_grab(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32):
+def xdg_popup_grab(self: WLPtr, seat: UnsafePointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 1
     var args_array = stack_allocation[2, WLArgument]()
     args_array[0] = WLArgument.make_o(seat)
@@ -412,7 +412,7 @@ def xdg_popup_grab(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], ser
     wl_proxy_marshal_array(self, 1, args_array)
 
 
-def xdg_popup_reposition(self: WLPtr, positioner: UnsafePointer[NoneType, MutAnyOrigin], token: UInt32):
+def xdg_popup_reposition(self: WLPtr, positioner: UnsafePointer[NoneType, MutUntrackedOrigin], token: UInt32):
     # opcode 2
     var args_array = stack_allocation[2, WLArgument]()
     args_array[0] = WLArgument.make_o(positioner)
@@ -420,12 +420,12 @@ def xdg_popup_reposition(self: WLPtr, positioner: UnsafePointer[NoneType, MutAny
     wl_proxy_marshal_array(self, 2, args_array)
 
 
-def xdg_popup_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+def xdg_popup_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Register the capture dispatcher on xdg_popup and write
     the queue handle to out_queue[0]. Pop events from that queue."""
     return _shim_listen(self, "xdg_popup", out_queue)
 
-def xdg_popup_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def xdg_popup_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending configure event into out_args (len 4). False = none."""
     var rc = _shim_event_pop(queue, 0, out_args)
     return rc == 0
@@ -436,7 +436,7 @@ def xdg_popup_next_popup_done(queue: WLPtr) -> Bool:
     var rc = _shim_event_pop(queue, 1, scratch)
     return rc == 1
 
-def xdg_popup_next_repositioned(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+def xdg_popup_next_repositioned(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:
     """Pop the next pending repositioned event into out_args (len 1). False = none."""
     var rc = _shim_event_pop(queue, 2, out_args)
     return rc == 2
