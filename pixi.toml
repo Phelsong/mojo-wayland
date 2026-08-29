@@ -1,0 +1,32 @@
+[project]
+name = "mojo-wayland"
+version = "0.1.0"
+description = "Mojo bindings for libwayland-client, generated from protocol XML"
+channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://prefix.dev/modular-community"]
+platforms = ["linux-64"]
+
+[dependencies]
+mojo = ">=1.0.0"
+pixi-python = "*"
+
+[tasks]
+# Generate Mojo bindings from protocol XML(s).
+# Add extension protocol XMLs as extra args (xdg-shell shown).
+gen = "python scripts/wayland_bindgen.py /usr/share/wayland/wayland.xml /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml"
+
+# Generate the scanner private-code objects for protocols whose interfaces are
+# NOT exported by libwayland-client (needed by the shim's interface table).
+scanner = """mkdir -p wayland/c/generated && \
+wayland-scanner private-code /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml wayland/c/generated/xdg-shell-protocol.c && \
+wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml wayland/c/generated/xdg-shell-client-protocol.h"""
+
+# Build the C shim (event capture + interface table).
+shim = "mkdir -p .pixi/lib && gcc -shared -fPIC -O2 -Wall -o .pixi/lib/libwayland_shim.so wayland/c/shim.c wayland/c/generated/xdg-shell-protocol.c -lwayland-client"
+
+# Package the Mojo side.
+build = { cmd = "mojo package wayland -I . -o .pixi/envs/default/lib/wayland.mojopkg", depends-on = ["gen"] }
+
+# Tests (need a running Wayland compositor).
+test-connect = { cmd = "mojo build tests/test_connect.mojo -I . -o .pixi/test_connect -Xlinker -L.pixi/lib -Xlinker -L.pixi/envs/default/lib -Xlinker -lwayland_shim -Xlinker -lwayland-client && LD_LIBRARY_PATH=.pixi/lib:.pixi/envs/default/lib .pixi/test_connect", depends-on = ["build", "shim"] }
+test-globals = { cmd = "mojo build tests/test_globals.mojo -I . -o .pixi/test_globals -Xlinker -L.pixi/lib -Xlinker -L.pixi/envs/default/lib -Xlinker -lwayland_shim -Xlinker -lwayland-client && LD_LIBRARY_PATH=.pixi/lib:.pixi/envs/default/lib .pixi/test_globals", depends-on = ["build", "shim"] }
+test-window  = { cmd = "mojo build tests/test_window.mojo -I . -o .pixi/test_window -Xlinker -L.pixi/lib -Xlinker -L.pixi/envs/default/lib -Xlinker -lwayland_shim -Xlinker -lwayland-client && LD_LIBRARY_PATH=.pixi/lib:.pixi/envs/default/lib .pixi/test_window", depends-on = ["build", "shim", "scanner"] }

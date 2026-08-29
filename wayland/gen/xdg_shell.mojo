@@ -1,0 +1,442 @@
+# AUTO-GENERATED — DO NOT EDIT.
+# from protocol 'xdg_shell'
+from wayland.core import WLPtr, WLArgument, WLString, MAX_EVENT_ARGS, _cstr, _shim_listen, _shim_event_pop, _shim_string_free, _proxy_constructor_versioned, wl_proxy_marshal_array, wl_proxy_marshal_array_constructor_versioned, wl_proxy_destroy
+from std.memory import stack_allocation
+
+# ---- xdg_wm_base v7 ----
+comptime XDG_WM_BASE_PING_OP: UInt32 = 0
+
+comptime XDG_WM_BASE_ERROR_ROLE: UInt32 = 0
+comptime XDG_WM_BASE_ERROR_DEFUNCT_SURFACES: UInt32 = 1
+comptime XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP: UInt32 = 2
+comptime XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT: UInt32 = 3
+comptime XDG_WM_BASE_ERROR_INVALID_SURFACE_STATE: UInt32 = 4
+comptime XDG_WM_BASE_ERROR_INVALID_POSITIONER: UInt32 = 5
+comptime XDG_WM_BASE_ERROR_UNRESPONSIVE: UInt32 = 6
+
+def xdg_wm_base_destroy(self: WLPtr):
+    # opcode 0: destructor
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 0, args_array)
+    wl_proxy_destroy(self)
+
+
+def xdg_wm_base_create_positioner(self: WLPtr) raises -> WLPtr:
+    # opcode 1: create_positioner
+    # opcode 1: create_positioner, creates xdg_positioner
+    # slots follow wire-signature positions (new_id slot zeroed)
+    var args_array = stack_allocation[1, WLArgument]()
+    return _proxy_constructor_versioned(self, 1, args_array, "xdg_positioner", 7)
+
+
+def xdg_wm_base_get_xdg_surface(self: WLPtr, surface: UnsafePointer[NoneType, MutAnyOrigin]) raises -> WLPtr:
+    # opcode 2: get_xdg_surface
+    # opcode 2: get_xdg_surface, creates xdg_surface
+    # slots follow wire-signature positions (new_id slot zeroed)
+    var args_array = stack_allocation[2, WLArgument]()
+    args_array[1] = WLArgument.make_o(surface)
+    return _proxy_constructor_versioned(self, 2, args_array, "xdg_surface", 7)
+
+
+def xdg_wm_base_pong(self: WLPtr, serial: UInt32):
+    # opcode 3
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_u(serial)
+    wl_proxy_marshal_array(self, 3, args_array)
+
+
+def xdg_wm_base_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+    """Register the capture dispatcher on xdg_wm_base and write
+    the queue handle to out_queue[0]. Pop events from that queue."""
+    return _shim_listen(self, "xdg_wm_base", out_queue)
+
+def xdg_wm_base_next_ping(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+    """Pop the next pending ping event into out_args (len 1). False = none."""
+    var rc = _shim_event_pop(queue, 0, out_args)
+    return rc == 0
+
+# ---- xdg_positioner v7 ----
+comptime XDG_POSITIONER_ERROR_INVALID_INPUT: UInt32 = 0
+
+comptime XDG_POSITIONER_ANCHOR_NONE: UInt32 = 0
+comptime XDG_POSITIONER_ANCHOR_TOP: UInt32 = 1
+comptime XDG_POSITIONER_ANCHOR_BOTTOM: UInt32 = 2
+comptime XDG_POSITIONER_ANCHOR_LEFT: UInt32 = 3
+comptime XDG_POSITIONER_ANCHOR_RIGHT: UInt32 = 4
+comptime XDG_POSITIONER_ANCHOR_TOP_LEFT: UInt32 = 5
+comptime XDG_POSITIONER_ANCHOR_BOTTOM_LEFT: UInt32 = 6
+comptime XDG_POSITIONER_ANCHOR_TOP_RIGHT: UInt32 = 7
+comptime XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT: UInt32 = 8
+
+comptime XDG_POSITIONER_GRAVITY_NONE: UInt32 = 0
+comptime XDG_POSITIONER_GRAVITY_TOP: UInt32 = 1
+comptime XDG_POSITIONER_GRAVITY_BOTTOM: UInt32 = 2
+comptime XDG_POSITIONER_GRAVITY_LEFT: UInt32 = 3
+comptime XDG_POSITIONER_GRAVITY_RIGHT: UInt32 = 4
+comptime XDG_POSITIONER_GRAVITY_TOP_LEFT: UInt32 = 5
+comptime XDG_POSITIONER_GRAVITY_BOTTOM_LEFT: UInt32 = 6
+comptime XDG_POSITIONER_GRAVITY_TOP_RIGHT: UInt32 = 7
+comptime XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT: UInt32 = 8
+
+comptime XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE: UInt32 = 0
+comptime XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X: UInt32 = 1
+comptime XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y: UInt32 = 2
+comptime XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X: UInt32 = 4
+comptime XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y: UInt32 = 8
+comptime XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X: UInt32 = 16
+comptime XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y: UInt32 = 32
+
+def xdg_positioner_destroy(self: WLPtr):
+    # opcode 0: destructor
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 0, args_array)
+    wl_proxy_destroy(self)
+
+
+def xdg_positioner_set_size(self: WLPtr, width: Int32, height: Int32):
+    # opcode 1
+    var args_array = stack_allocation[2, WLArgument]()
+    args_array[0] = WLArgument.make_i(width)
+    args_array[1] = WLArgument.make_i(height)
+    wl_proxy_marshal_array(self, 1, args_array)
+
+
+def xdg_positioner_set_anchor_rect(self: WLPtr, x: Int32, y: Int32, width: Int32, height: Int32):
+    # opcode 2
+    var args_array = stack_allocation[4, WLArgument]()
+    args_array[0] = WLArgument.make_i(x)
+    args_array[1] = WLArgument.make_i(y)
+    args_array[2] = WLArgument.make_i(width)
+    args_array[3] = WLArgument.make_i(height)
+    wl_proxy_marshal_array(self, 2, args_array)
+
+
+def xdg_positioner_set_anchor(self: WLPtr, anchor: UInt32):
+    # opcode 3
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_u(anchor)
+    wl_proxy_marshal_array(self, 3, args_array)
+
+
+def xdg_positioner_set_gravity(self: WLPtr, gravity: UInt32):
+    # opcode 4
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_u(gravity)
+    wl_proxy_marshal_array(self, 4, args_array)
+
+
+def xdg_positioner_set_constraint_adjustment(self: WLPtr, constraint_adjustment: UInt32):
+    # opcode 5
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_u(constraint_adjustment)
+    wl_proxy_marshal_array(self, 5, args_array)
+
+
+def xdg_positioner_set_offset(self: WLPtr, x: Int32, y: Int32):
+    # opcode 6
+    var args_array = stack_allocation[2, WLArgument]()
+    args_array[0] = WLArgument.make_i(x)
+    args_array[1] = WLArgument.make_i(y)
+    wl_proxy_marshal_array(self, 6, args_array)
+
+
+def xdg_positioner_set_reactive(self: WLPtr):
+    # opcode 7
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 7, args_array)
+
+
+def xdg_positioner_set_parent_size(self: WLPtr, parent_width: Int32, parent_height: Int32):
+    # opcode 8
+    var args_array = stack_allocation[2, WLArgument]()
+    args_array[0] = WLArgument.make_i(parent_width)
+    args_array[1] = WLArgument.make_i(parent_height)
+    wl_proxy_marshal_array(self, 8, args_array)
+
+
+def xdg_positioner_set_parent_configure(self: WLPtr, serial: UInt32):
+    # opcode 9
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_u(serial)
+    wl_proxy_marshal_array(self, 9, args_array)
+
+
+# ---- xdg_surface v7 ----
+comptime XDG_SURFACE_CONFIGURE_OP: UInt32 = 0
+
+comptime XDG_SURFACE_ERROR_NOT_CONSTRUCTED: UInt32 = 1
+comptime XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED: UInt32 = 2
+comptime XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER: UInt32 = 3
+comptime XDG_SURFACE_ERROR_INVALID_SERIAL: UInt32 = 4
+comptime XDG_SURFACE_ERROR_INVALID_SIZE: UInt32 = 5
+comptime XDG_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT: UInt32 = 6
+
+def xdg_surface_destroy(self: WLPtr):
+    # opcode 0: destructor
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 0, args_array)
+    wl_proxy_destroy(self)
+
+
+def xdg_surface_get_toplevel(self: WLPtr) raises -> WLPtr:
+    # opcode 1: get_toplevel
+    # opcode 1: get_toplevel, creates xdg_toplevel
+    # slots follow wire-signature positions (new_id slot zeroed)
+    var args_array = stack_allocation[1, WLArgument]()
+    return _proxy_constructor_versioned(self, 1, args_array, "xdg_toplevel", 7)
+
+
+def xdg_surface_get_popup(self: WLPtr, parent: UnsafePointer[NoneType, MutAnyOrigin], positioner: UnsafePointer[NoneType, MutAnyOrigin]) raises -> WLPtr:
+    # opcode 2: get_popup
+    # opcode 2: get_popup, creates xdg_popup
+    # slots follow wire-signature positions (new_id slot zeroed)
+    var args_array = stack_allocation[3, WLArgument]()
+    args_array[1] = WLArgument.make_o(parent)
+    args_array[2] = WLArgument.make_o(positioner)
+    return _proxy_constructor_versioned(self, 2, args_array, "xdg_popup", 7)
+
+
+def xdg_surface_set_window_geometry(self: WLPtr, x: Int32, y: Int32, width: Int32, height: Int32):
+    # opcode 3
+    var args_array = stack_allocation[4, WLArgument]()
+    args_array[0] = WLArgument.make_i(x)
+    args_array[1] = WLArgument.make_i(y)
+    args_array[2] = WLArgument.make_i(width)
+    args_array[3] = WLArgument.make_i(height)
+    wl_proxy_marshal_array(self, 3, args_array)
+
+
+def xdg_surface_ack_configure(self: WLPtr, serial: UInt32):
+    # opcode 4
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_u(serial)
+    wl_proxy_marshal_array(self, 4, args_array)
+
+
+def xdg_surface_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+    """Register the capture dispatcher on xdg_surface and write
+    the queue handle to out_queue[0]. Pop events from that queue."""
+    return _shim_listen(self, "xdg_surface", out_queue)
+
+def xdg_surface_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+    """Pop the next pending configure event into out_args (len 1). False = none."""
+    var rc = _shim_event_pop(queue, 0, out_args)
+    return rc == 0
+
+# ---- xdg_toplevel v7 ----
+comptime XDG_TOPLEVEL_CONFIGURE_OP: UInt32 = 0
+comptime XDG_TOPLEVEL_CLOSE_OP: UInt32 = 1
+comptime XDG_TOPLEVEL_CONFIGURE_BOUNDS_OP: UInt32 = 2
+comptime XDG_TOPLEVEL_WM_CAPABILITIES_OP: UInt32 = 3
+
+comptime XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE: UInt32 = 0
+comptime XDG_TOPLEVEL_ERROR_INVALID_PARENT: UInt32 = 1
+comptime XDG_TOPLEVEL_ERROR_INVALID_SIZE: UInt32 = 2
+
+comptime XDG_TOPLEVEL_RESIZE_EDGE_NONE: UInt32 = 0
+comptime XDG_TOPLEVEL_RESIZE_EDGE_TOP: UInt32 = 1
+comptime XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM: UInt32 = 2
+comptime XDG_TOPLEVEL_RESIZE_EDGE_LEFT: UInt32 = 4
+comptime XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT: UInt32 = 5
+comptime XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT: UInt32 = 6
+comptime XDG_TOPLEVEL_RESIZE_EDGE_RIGHT: UInt32 = 8
+comptime XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT: UInt32 = 9
+comptime XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT: UInt32 = 10
+
+comptime XDG_TOPLEVEL_STATE_MAXIMIZED: UInt32 = 1
+comptime XDG_TOPLEVEL_STATE_FULLSCREEN: UInt32 = 2
+comptime XDG_TOPLEVEL_STATE_RESIZING: UInt32 = 3
+comptime XDG_TOPLEVEL_STATE_ACTIVATED: UInt32 = 4
+comptime XDG_TOPLEVEL_STATE_TILED_LEFT: UInt32 = 5
+comptime XDG_TOPLEVEL_STATE_TILED_RIGHT: UInt32 = 6
+comptime XDG_TOPLEVEL_STATE_TILED_TOP: UInt32 = 7
+comptime XDG_TOPLEVEL_STATE_TILED_BOTTOM: UInt32 = 8
+comptime XDG_TOPLEVEL_STATE_SUSPENDED: UInt32 = 9
+comptime XDG_TOPLEVEL_STATE_CONSTRAINED_LEFT: UInt32 = 10
+comptime XDG_TOPLEVEL_STATE_CONSTRAINED_RIGHT: UInt32 = 11
+comptime XDG_TOPLEVEL_STATE_CONSTRAINED_TOP: UInt32 = 12
+comptime XDG_TOPLEVEL_STATE_CONSTRAINED_BOTTOM: UInt32 = 13
+
+comptime XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU: UInt32 = 1
+comptime XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE: UInt32 = 2
+comptime XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN: UInt32 = 3
+comptime XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE: UInt32 = 4
+
+def xdg_toplevel_destroy(self: WLPtr):
+    # opcode 0: destructor
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 0, args_array)
+    wl_proxy_destroy(self)
+
+
+def xdg_toplevel_set_parent(self: WLPtr, parent: UnsafePointer[NoneType, MutAnyOrigin]):
+    # opcode 1
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_o(parent)
+    wl_proxy_marshal_array(self, 1, args_array)
+
+
+def xdg_toplevel_set_title(self: WLPtr, title: WLString):
+    # opcode 2
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_s(title)
+    wl_proxy_marshal_array(self, 2, args_array)
+
+
+def xdg_toplevel_set_app_id(self: WLPtr, app_id: WLString):
+    # opcode 3
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_s(app_id)
+    wl_proxy_marshal_array(self, 3, args_array)
+
+
+def xdg_toplevel_show_window_menu(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32, x: Int32, y: Int32):
+    # opcode 4
+    var args_array = stack_allocation[4, WLArgument]()
+    args_array[0] = WLArgument.make_o(seat)
+    args_array[1] = WLArgument.make_u(serial)
+    args_array[2] = WLArgument.make_i(x)
+    args_array[3] = WLArgument.make_i(y)
+    wl_proxy_marshal_array(self, 4, args_array)
+
+
+def xdg_toplevel_move(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32):
+    # opcode 5
+    var args_array = stack_allocation[2, WLArgument]()
+    args_array[0] = WLArgument.make_o(seat)
+    args_array[1] = WLArgument.make_u(serial)
+    wl_proxy_marshal_array(self, 5, args_array)
+
+
+def xdg_toplevel_resize(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32, edges: UInt32):
+    # opcode 6
+    var args_array = stack_allocation[3, WLArgument]()
+    args_array[0] = WLArgument.make_o(seat)
+    args_array[1] = WLArgument.make_u(serial)
+    args_array[2] = WLArgument.make_u(edges)
+    wl_proxy_marshal_array(self, 6, args_array)
+
+
+def xdg_toplevel_set_max_size(self: WLPtr, width: Int32, height: Int32):
+    # opcode 7
+    var args_array = stack_allocation[2, WLArgument]()
+    args_array[0] = WLArgument.make_i(width)
+    args_array[1] = WLArgument.make_i(height)
+    wl_proxy_marshal_array(self, 7, args_array)
+
+
+def xdg_toplevel_set_min_size(self: WLPtr, width: Int32, height: Int32):
+    # opcode 8
+    var args_array = stack_allocation[2, WLArgument]()
+    args_array[0] = WLArgument.make_i(width)
+    args_array[1] = WLArgument.make_i(height)
+    wl_proxy_marshal_array(self, 8, args_array)
+
+
+def xdg_toplevel_set_maximized(self: WLPtr):
+    # opcode 9
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 9, args_array)
+
+
+def xdg_toplevel_unset_maximized(self: WLPtr):
+    # opcode 10
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 10, args_array)
+
+
+def xdg_toplevel_set_fullscreen(self: WLPtr, output: UnsafePointer[NoneType, MutAnyOrigin]):
+    # opcode 11
+    var args_array = stack_allocation[1, WLArgument]()
+    args_array[0] = WLArgument.make_o(output)
+    wl_proxy_marshal_array(self, 11, args_array)
+
+
+def xdg_toplevel_unset_fullscreen(self: WLPtr):
+    # opcode 12
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 12, args_array)
+
+
+def xdg_toplevel_set_minimized(self: WLPtr):
+    # opcode 13
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 13, args_array)
+
+
+def xdg_toplevel_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+    """Register the capture dispatcher on xdg_toplevel and write
+    the queue handle to out_queue[0]. Pop events from that queue."""
+    return _shim_listen(self, "xdg_toplevel", out_queue)
+
+def xdg_toplevel_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+    """Pop the next pending configure event into out_args (len 3). False = none."""
+    var rc = _shim_event_pop(queue, 0, out_args)
+    return rc == 0
+
+def xdg_toplevel_next_close(queue: WLPtr) -> Bool:
+    """Pop the next pending close event. False = none."""
+    var scratch = stack_allocation[1, WLArgument]()
+    var rc = _shim_event_pop(queue, 1, scratch)
+    return rc == 1
+
+def xdg_toplevel_next_configure_bounds(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+    """Pop the next pending configure_bounds event into out_args (len 2). False = none."""
+    var rc = _shim_event_pop(queue, 2, out_args)
+    return rc == 2
+
+def xdg_toplevel_next_wm_capabilities(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+    """Pop the next pending wm_capabilities event into out_args (len 1). False = none."""
+    var rc = _shim_event_pop(queue, 3, out_args)
+    return rc == 3
+
+# ---- xdg_popup v7 ----
+comptime XDG_POPUP_CONFIGURE_OP: UInt32 = 0
+comptime XDG_POPUP_POPUP_DONE_OP: UInt32 = 1
+comptime XDG_POPUP_REPOSITIONED_OP: UInt32 = 2
+
+comptime XDG_POPUP_ERROR_INVALID_GRAB: UInt32 = 0
+
+def xdg_popup_destroy(self: WLPtr):
+    # opcode 0: destructor
+    var args_array = stack_allocation[1, WLArgument]()
+    wl_proxy_marshal_array(self, 0, args_array)
+    wl_proxy_destroy(self)
+
+
+def xdg_popup_grab(self: WLPtr, seat: UnsafePointer[NoneType, MutAnyOrigin], serial: UInt32):
+    # opcode 1
+    var args_array = stack_allocation[2, WLArgument]()
+    args_array[0] = WLArgument.make_o(seat)
+    args_array[1] = WLArgument.make_u(serial)
+    wl_proxy_marshal_array(self, 1, args_array)
+
+
+def xdg_popup_reposition(self: WLPtr, positioner: UnsafePointer[NoneType, MutAnyOrigin], token: UInt32):
+    # opcode 2
+    var args_array = stack_allocation[2, WLArgument]()
+    args_array[0] = WLArgument.make_o(positioner)
+    args_array[1] = WLArgument.make_u(token)
+    wl_proxy_marshal_array(self, 2, args_array)
+
+
+def xdg_popup_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutAnyOrigin]) -> Int32:
+    """Register the capture dispatcher on xdg_popup and write
+    the queue handle to out_queue[0]. Pop events from that queue."""
+    return _shim_listen(self, "xdg_popup", out_queue)
+
+def xdg_popup_next_configure(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+    """Pop the next pending configure event into out_args (len 4). False = none."""
+    var rc = _shim_event_pop(queue, 0, out_args)
+    return rc == 0
+
+def xdg_popup_next_popup_done(queue: WLPtr) -> Bool:
+    """Pop the next pending popup_done event. False = none."""
+    var scratch = stack_allocation[1, WLArgument]()
+    var rc = _shim_event_pop(queue, 1, scratch)
+    return rc == 1
+
+def xdg_popup_next_repositioned(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutAnyOrigin]) -> Bool:
+    """Pop the next pending repositioned event into out_args (len 1). False = none."""
+    var rc = _shim_event_pop(queue, 2, out_args)
+    return rc == 2
