@@ -6,8 +6,10 @@ channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://pre
 platforms = ["linux-64"]
 
 [dependencies]
-mojo = ">=1.0.0"
-pixi-python = "*"
+# Pin the same Mojo the library was written against; 1.1.0.dev renames
+# UnsafePointer -> Pointer, InlineArray import rules, etc.
+mojo = "==1.0.0b2"
+python = "*"
 
 [tasks]
 # Generate Mojo bindings from protocol XML(s).
@@ -24,7 +26,7 @@ wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-
 shim = "mkdir -p .pixi/lib && gcc -shared -fPIC -O2 -Wall -o .pixi/lib/libwayland_shim.so wayland/c/shim.c wayland/c/generated/xdg-shell-protocol.c -lwayland-client"
 
 # Package the Mojo side.
-build = { cmd = "mojo package wayland -I . -o .pixi/envs/default/lib/wayland.mojopkg", depends-on = ["gen"] }
+build = { cmd = "mojo package wayland -I . -o .pixi/envs/default/lib/wayland.mojoc", depends-on = ["gen"] }
 
 # Tests (need a running Wayland compositor).
 test-connect = { cmd = "mojo build tests/test_connect.mojo -I . -o .pixi/test_connect -Xlinker -L.pixi/lib -Xlinker -L.pixi/envs/default/lib -Xlinker -lwayland_shim -Xlinker -lwayland-client && LD_LIBRARY_PATH=.pixi/lib:.pixi/envs/default/lib .pixi/test_connect", depends-on = ["build", "shim"] }
