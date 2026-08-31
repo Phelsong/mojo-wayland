@@ -1,3 +1,4 @@
 .pixi/
 *.mojopkg
 *.mojoc
+__pycache__/

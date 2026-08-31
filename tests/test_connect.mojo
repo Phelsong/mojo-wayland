@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 Josh S Wilkinson
 # Minimal connect probe: does wl_display_connect alone work in a fresh binary?
 from std.ffi import external_call
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 Josh S Wilkinson
 /* shim.c — C support for mojo-wayland bindings.
  *
  * Three responsibilities:

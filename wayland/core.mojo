@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 Josh S Wilkinson
 # This file is NOT regenerated.
 from std.ffi import external_call
 from std.memory import stack_allocation

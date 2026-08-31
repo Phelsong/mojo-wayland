@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 Josh S Wilkinson
 # Live-compositor test for the wayland package.
 # Flow: connect -> wl_display_get_registry -> registry_listen ->
 #       dispatch -> pop REGISTRY_GLOBAL_OP events -> print globals ->

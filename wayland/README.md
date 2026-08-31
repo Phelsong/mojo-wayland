@@ -4,6 +4,15 @@ Mojo bindings for the Wayland client protocol, generated from the official
 protocol XML. Experimental; lives in this repo for now and is designed to be
 extracted into a standalone project later.
 
+## License
+
+MIT — see [LICENSE](../LICENSE).
+
+The generated files under `wayland/gen/` are derived from the Wayland core
+protocol and xdg-shell protocol XMLs, which carry their own permissive
+copyright notices, reproduced in `wayland/c/generated/`. The generated
+bindings inherit those notices.
+
 ## Layout
 
 | Path                       | Purpose                                                    |

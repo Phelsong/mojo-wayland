@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 Josh S Wilkinson
 # Live window test: full WSI proof for the wayland package.
 # Flow: connect -> registry globals -> bind wl_compositor + wl_shm + xdg_wm_base
 #   -> create surface -> xdg surface -> toplevel -> wait configure -> ack
