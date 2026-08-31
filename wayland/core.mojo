@@ -1,9 +1,8 @@
-# core.mojo — hand-written runtime support for generated wayland bindings.
 # This file is NOT regenerated.
 from std.ffi import external_call
 from std.memory import stack_allocation
 
-comptime MUT_PTR = UnsafePointer[NoneType, MutUntrackedOrigin]
+comptime MUT_PTR = Pointer[NoneType, MutUntrackedOrigin]
 
 # Opaque object handle. All wl_* objects (display, surface, seat, ...) are
 # pointers to wl_proxy internally.
@@ -11,18 +10,18 @@ comptime WLPtr = MUT_PTR
 
 # A protocol string argument. The C shim copies to a NUL-terminated buffer
 # that lives for the duration of the request; Mojo side just carries bytes.
-comptime WLString = UnsafePointer[Byte, MutUntrackedOrigin]
+comptime WLString = Pointer[Byte, MutUntrackedOrigin]
 
 # Max protocol args of any single event across known protocols.
 comptime MAX_EVENT_ARGS = 16
 
 
-def _cstr(s: String) -> UnsafePointer[Int8, MutUntrackedOrigin]:
+def _cstr(s: String) -> Pointer[Int8, MutUntrackedOrigin]:
     """Null-terminated C char* view into a Mojo String (borrowed).
     Copies internally so immutable callers are fine."""
     var copy = String(s)
     var cs = copy.as_c_string_slice()
-    return rebind[UnsafePointer[Int8, MutUntrackedOrigin]](cs)
+    return rebind[Pointer[Int8, MutUntrackedOrigin]](cs)
 
 
 def _shim_interface(name: String) -> WLPtr:
@@ -30,7 +29,7 @@ def _shim_interface(name: String) -> WLPtr:
     return external_call["wayland_shim_interface", WLPtr](_cstr(name))
 
 
-def _proxy_constructor_versioned(proxy: WLPtr, opcode: UInt32, args: UnsafePointer[WLArgument, MutUntrackedOrigin], iface_name: String, version: UInt32) raises -> WLPtr:
+def _proxy_constructor_versioned(proxy: WLPtr, opcode: UInt32, args: Pointer[WLArgument, MutUntrackedOrigin], iface_name: String, version: UInt32) raises -> WLPtr:
     """Constructor helper: resolves the interface record by name through the
     C shim (wl_*_interface are data symbols, invisible to external_call).
 
@@ -51,14 +50,14 @@ def _proxy_constructor_versioned(proxy: WLPtr, opcode: UInt32, args: UnsafePoint
 # handle; pop() takes the queue so the C side needs no proxy lookups.
 
 
-def _shim_listen(proxy: WLPtr, iface_name: String, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:
+def _shim_listen(proxy: WLPtr, iface_name: String, out_queue: Pointer[WLPtr, MutUntrackedOrigin]) -> Int32:
     """Install the capture dispatcher on a proxy. Returns 0 on success and
     writes the queue handle to out_queue (out param: the C side writes one
     pointer, so this takes a single-slot buffer, not the slot's value)."""
     return external_call["wayland_shim_listen", Int32](proxy, _cstr(iface_name), out_queue)
 
 
-def _shim_event_pop(queue: WLPtr, opcode: UInt32, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Int32:
+def _shim_event_pop(queue: WLPtr, opcode: UInt32, out_args: Pointer[WLArgument, MutUntrackedOrigin]) -> Int32:
     """Pop one captured event into out_args. Returns its opcode or -1.
     Any returned string args are malloc'd copies owned by the caller
     (free via wayland_shim_string_free)."""
@@ -84,7 +83,7 @@ def shim_interface(name: String) raises -> WLPtr:
 
 def wl_display_connect(name: UInt64) -> WLPtr:
     # NOTE: an explicit explicit-name argument is REQUIRED. A zero-arg
-    # external_call on Mojo 1.0.0b2 emits a call with an UNDEFINED first
+    # external_call on Mojo 1.0.0 emits a call with an UNDEFINED first
     # register (garbage or stack pointer), which libwayland treats as a
     # literal socket name — connect then fails depending on surrounding
     # codegen. Passing UInt64(0) = NULL name is the only safe form.
@@ -119,7 +118,7 @@ def wl_display_get_error(display: WLPtr) -> Int32:
     return external_call["wl_display_get_error", Int32](display)
 
 
-def wl_display_get_protocol_error(display: WLPtr, out_interface: WLPtr, out_id: UnsafePointer[UInt32, MutUntrackedOrigin]) -> UInt32:
+def wl_display_get_protocol_error(display: WLPtr, out_interface: WLPtr, out_id: Pointer[UInt32, MutUntrackedOrigin]) -> UInt32:
     return external_call["wl_display_get_protocol_error", UInt32](display, out_interface, out_id)
 
 
@@ -135,15 +134,15 @@ def wl_proxy_destroy(proxy: WLPtr):
     external_call["wl_proxy_destroy", NoneType](proxy)
 
 
-def wl_proxy_marshal_array(proxy: WLPtr, opcode: UInt32, args: UnsafePointer[WLArgument, MutUntrackedOrigin]):
+def wl_proxy_marshal_array(proxy: WLPtr, opcode: UInt32, args: Pointer[WLArgument, MutUntrackedOrigin]):
     external_call["wl_proxy_marshal_array", NoneType](proxy, opcode, args)
 
 
-def wl_proxy_marshal_array_constructor_versioned(proxy: WLPtr, opcode: UInt32, args: UnsafePointer[WLArgument, MutUntrackedOrigin], iface: WLPtr, version: UInt32) -> WLPtr:
+def wl_proxy_marshal_array_constructor_versioned(proxy: WLPtr, opcode: UInt32, args: Pointer[WLArgument, MutUntrackedOrigin], iface: WLPtr, version: UInt32) -> WLPtr:
     return external_call["wl_proxy_marshal_array_constructor_versioned", WLPtr](proxy, opcode, args, iface, version)
 
 
-def wl_proxy_marshal_array_flags(proxy: WLPtr, opcode: UInt32, args: UnsafePointer[WLArgument, MutUntrackedOrigin], iface: WLPtr, version: UInt32, flags: UInt32) -> WLPtr:
+def wl_proxy_marshal_array_flags(proxy: WLPtr, opcode: UInt32, args: Pointer[WLArgument, MutUntrackedOrigin], iface: WLPtr, version: UInt32, flags: UInt32) -> WLPtr:
     return external_call["wl_proxy_marshal_array_flags", WLPtr](proxy, opcode, args, iface, version, flags)
 
 
@@ -181,9 +180,6 @@ def wl_array_add(arr: WLPtr, size: Int) -> WLPtr:
 
 # wl_argument mirror (8 bytes on x86_64). Byte buffer with typed constructors;
 # layout matches wayland-client's union EXACTLY.
-# NOTE (Mojo 1.0.0): InlineArray is NOT implicitly copyable, so this struct
-# needs an explicit (mut self, existing: Self) __copyinit__ (synthesis is
-# rejected); copies flow through .copy().
 struct WLArgument(Copyable, Movable):
     var raw: InlineArray[Byte, 8]
 
@@ -198,14 +194,14 @@ struct WLArgument(Copyable, Movable):
             self.raw[i] = existing.raw[i]
 
     @staticmethod
-    def store32(b: UnsafePointer[Byte, MutUntrackedOrigin], off: Int, value: Int32):
+    def store32(b: Pointer[Byte, MutUntrackedOrigin], off: Int, value: Int32):
         b[off] = Byte(value & 0xFF)
         b[off + 1] = Byte((value >> 8) & 0xFF)
         b[off + 2] = Byte((value >> 16) & 0xFF)
         b[off + 3] = Byte((value >> 24) & 0xFF)
 
     @staticmethod
-    def store64(b: UnsafePointer[Byte, MutUntrackedOrigin], off: Int, value: UInt):
+    def store64(b: Pointer[Byte, MutUntrackedOrigin], off: Int, value: UInt):
         b[off] = Byte(value & 0xFF)
         b[off + 1] = Byte((value >> 8) & 0xFF)
         b[off + 2] = Byte((value >> 16) & 0xFF)
@@ -218,7 +214,7 @@ struct WLArgument(Copyable, Movable):
     @staticmethod
     def make_i(value: Int32) -> Self:
         var a = Self()
-        var bp = UnsafePointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(a.raw.unsafe_ptr()))
+        var bp = Pointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(a.raw.unsafe_ptr()))
         Self.store32(bp, 0, value)
         return a.copy()
 
@@ -226,7 +222,7 @@ struct WLArgument(Copyable, Movable):
     def make_u(value: UInt32) -> Self:
         var a = Self()
         var bits: UInt = UInt(value)
-        var bp = UnsafePointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(a.raw.unsafe_ptr()))
+        var bp = Pointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(a.raw.unsafe_ptr()))
         Self.store32(bp, 0, Int32(bits))
         return a.copy()
 
@@ -259,6 +255,6 @@ struct WLArgument(Copyable, Movable):
     @staticmethod
     def _from_ptr(val: UInt) -> Self:
         var a = Self()
-        var bp = UnsafePointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(a.raw.unsafe_ptr()))
+        var bp = Pointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(a.raw.unsafe_ptr()))
         Self.store64(bp, 0, val)
         return a.copy()
