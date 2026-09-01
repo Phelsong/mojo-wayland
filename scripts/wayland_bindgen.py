@@ -15,7 +15,7 @@ Design notes (Mojo 1.0.0b2, verified against the compiler directly):
     functions (wl_surface_commit etc.) are header-inline. Requests therefore
     lower to wl_proxy_marshal_array / wl_proxy_marshal_array_constructor_versioned
     via Mojo `external_call` (proven working on this compiler).
-  * Opaque handles = UnsafePointer[NoneType, MutUntrackedOrigin]; null check via Int(ptr)==0.
+  * Opaque handles = Pointer[NoneType, MutUntrackedOrigin]; null check via Int(ptr)==0.
   * Events: a C shim defines real wl_*_listener structs whose callbacks call
     Mojo trampolines emitted into wayland/gen/listeners.mojo. This keeps the
     unstable ABI out of Mojo entirely.
@@ -41,7 +41,7 @@ from typing import Dict, List, Optional, Tuple
 # wayland.xml <arg type="..."> -> Mojo type expression. Verified against
 # libwayland-client ABI (wl_argument union in wayland-client-core.h).
 
-MOJO_PTR = "UnsafePointer[NoneType, MutUntrackedOrigin]"
+MOJO_PTR = "Pointer[NoneType, MutUntrackedOrigin]"
 
 # (xml type, interface attr present?) -> (mojo type, wl_argument tag)
 # wl_argument tags: i(int) u(uint) f(fixed) s(string) o(object) n(new_id) a(array) h(fd)
@@ -384,7 +384,7 @@ def emit_interface_module(proto: Protocol) -> str:
         if iface.events:
             short = snake(iface.name)
             parts.append(
-                f"def {short}_listen(self: WLPtr, out_queue: UnsafePointer[WLPtr, MutUntrackedOrigin]) -> Int32:"
+                f"def {short}_listen(self: WLPtr, out_queue: Pointer[WLPtr, MutUntrackedOrigin]) -> Int32:"
                 f'\n    """Register the capture dispatcher on {iface.name} and write'
                 f'\n    the queue handle to out_queue[0]. Pop events from that queue."""'
                 f"\n    return _shim_listen(self, \"{iface.name}\", out_queue)"
@@ -396,7 +396,7 @@ def emit_interface_module(proto: Protocol) -> str:
                 non_new = [a for a in ev.args if a.type != "new_id"]
                 if non_new:
                     ev_blocks.append(
-                        f"def {dec}(queue: WLPtr, out_args: UnsafePointer[WLArgument, MutUntrackedOrigin]) -> Bool:"
+                        f"def {dec}(queue: WLPtr, out_args: Pointer[WLArgument, MutUntrackedOrigin]) -> Bool:"
                         f'\n    """Pop the next pending {ev.name} event into out_args (len {len(non_new)}). False = none."""'
                         f"\n    var rc = _shim_event_pop(queue, {ev.opcode}, out_args)"
                         f"\n    return rc == {ev.opcode}"
