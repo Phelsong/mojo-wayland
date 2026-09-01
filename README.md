@@ -1,8 +1,7 @@
 # mojo-wayland
 
 Mojo bindings for the Wayland client protocol, generated from the official
-protocol XML. Experimental; lives in this repo for now and is designed to be
-extracted into a standalone project later.
+protocol XML. 
 
 ## License
 
@@ -83,17 +82,12 @@ pixi run mojo build wayland-test/test_globals.mojo -I . -o .pixi/test_globals \
 LD_LIBRARY_PATH=.pixi/lib:.pixi/envs/default/lib .pixi/test_globals
 ```
 
-## Mojo 1.0.0b2 notes (things that cost us here)
+## Mojo 1.0.0 notes
 
 - `std.ffi.OwnedDLHandle.get_function` is unusable: a `def(...) -> T` type in
   parameter position becomes `AnyTrait` and fails the
   `TrivialRegisterPassable` constraint. Use `external_call` + link-time
   linking instead.
-- `fn` keyword removed; `def` only. No inline ternary. Dict has no
-  `.contains()`.
-- Null checks: `Int(ptr) == 0` (UnsafePointer is non-nullable);
-  construction via `UnsafePointer[T, MutAnyOrigin](unsafe_from_address=addr)`.
-- `InlineArray[Byte, N](uninitialized=True)` — `undef=` doesn't exist.
 - `external_call` can't return None: declare `def f(...):` without a return
   type for void C functions.
 - **Zero-arg `external_call` is unsafe**: `external_call["f", T]()` emits a
@@ -105,27 +99,7 @@ LD_LIBRARY_PATH=.pixi/lib:.pixi/envs/default/lib .pixi/test_globals
   functions.
 - Buffers passed to `{iface}_next_{event}(queue, out_args)` MUST be
   `MAX_EVENT_ARGS` (16) entries; the C shim memset-cleans the whole array
-  regardless of the event's real arg count (a 1-entry scratch buffer will
-  smash the stack).
-- `match` is a reserved keyword; tuples don't work as return types; `var (a,
-  b) = f()` destructuring doesn't exist.
-- Relative imports between subpackages fail; use absolute
-  (`from wayland.core import ...`).
-
-## Extracting to its own repo
-
-The package is self-contained: `wayland/` + `scripts/wayland_bindgen.py` have
-no imports from Quire's `functions/` or `main.mojo`. To extract:
-
-1. Copy `wayland/` and `scripts/wayland_bindgen.py` into the new repo.
-2. Copy the `wayland-*` tasks from `pixi.toml`.
-3. Regenerate the xdg-shell private-code if the protocol XML changes:
-   `wayland-scanner private-code <xdg-shell.xml> wayland/c/generated/xdg-shell-protocol.c`
-   and `wayland-scanner client-header <xdg-shell.xml> wayland/c/generated/xdg-shell-client-protocol.h`.
-4. Add extension protocols with more XMLs:
-   `pixi run wayland-gen /usr/share/wayland/wayland.xml <extra>.xml`
-   (e.g. `/usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml`).
-   Each emits `wayland/gen/<proto>.mojo` and is re-exported from `__init__`.
+  regardless of the event's real arg count.
 
 ## Known limitations
 
