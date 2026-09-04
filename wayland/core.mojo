@@ -197,21 +197,21 @@ struct WLArgument(Copyable, Movable):
 
     @staticmethod
     def store32(b: Pointer[Byte, MutUntrackedOrigin], off: Int, value: Int32):
-        b[off] = Byte(value & 0xFF)
-        b[off + 1] = Byte((value >> 8) & 0xFF)
-        b[off + 2] = Byte((value >> 16) & 0xFF)
-        b[off + 3] = Byte((value >> 24) & 0xFF)
+        b[unsafe_offset=off] = Byte(value & 0xFF)
+        b[unsafe_offset=off + 1] = Byte((value >> 8) & 0xFF)
+        b[unsafe_offset=off + 2] = Byte((value >> 16) & 0xFF)
+        b[unsafe_offset=off + 3] = Byte((value >> 24) & 0xFF)
 
     @staticmethod
     def store64(b: Pointer[Byte, MutUntrackedOrigin], off: Int, value: UInt):
-        b[off] = Byte(value & 0xFF)
-        b[off + 1] = Byte((value >> 8) & 0xFF)
-        b[off + 2] = Byte((value >> 16) & 0xFF)
-        b[off + 3] = Byte((value >> 24) & 0xFF)
-        b[off + 4] = Byte((value >> 32) & 0xFF)
-        b[off + 5] = Byte((value >> 40) & 0xFF)
-        b[off + 6] = Byte((value >> 48) & 0xFF)
-        b[off + 7] = Byte((value >> 56) & 0xFF)
+        b[unsafe_offset=off] = Byte(value & 0xFF)
+        b[unsafe_offset=off + 1] = Byte((value >> 8) & 0xFF)
+        b[unsafe_offset=off + 2] = Byte((value >> 16) & 0xFF)
+        b[unsafe_offset=off + 3] = Byte((value >> 24) & 0xFF)
+        b[unsafe_offset=off + 4] = Byte((value >> 32) & 0xFF)
+        b[unsafe_offset=off + 5] = Byte((value >> 40) & 0xFF)
+        b[unsafe_offset=off + 6] = Byte((value >> 48) & 0xFF)
+        b[unsafe_offset=off + 7] = Byte((value >> 56) & 0xFF)
 
     @staticmethod
     def make_i(value: Int32) -> Self:

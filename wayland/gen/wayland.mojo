@@ -51,9 +51,9 @@ def wl_registry_bind(self: WLPtr, iface: WLPtr, iface_name: WLString, name: UInt
     # opcode 0: generic constructor (caller picks interface;
     # scanner synthesizes 's' interface-name + 'u' version wire args)
     var args_array = stack_allocation[3, WLArgument]()
-    args_array[0] = WLArgument.make_u(name)
-    args_array[1] = WLArgument.make_s(iface_name)
-    args_array[2] = WLArgument.make_u(version)
+    args_array[unsafe_offset=0] = WLArgument.make_u(name)
+    args_array[unsafe_offset=1] = WLArgument.make_s(iface_name)
+    args_array[unsafe_offset=2] = WLArgument.make_u(version)
     return wl_proxy_marshal_array_constructor_versioned(self, 0, args_array, iface, version)
 
 
@@ -118,11 +118,11 @@ def wl_shm_pool_create_buffer(self: WLPtr, offset: Int32, width: Int32, height: 
     # opcode 0: create_buffer, creates wl_buffer
     # slots follow wire-signature positions (new_id slot zeroed)
     var args_array = stack_allocation[6, WLArgument]()
-    args_array[1] = WLArgument.make_i(offset)
-    args_array[2] = WLArgument.make_i(width)
-    args_array[3] = WLArgument.make_i(height)
-    args_array[4] = WLArgument.make_i(stride)
-    args_array[5] = WLArgument.make_u(format)
+    args_array[unsafe_offset=1] = WLArgument.make_i(offset)
+    args_array[unsafe_offset=2] = WLArgument.make_i(width)
+    args_array[unsafe_offset=3] = WLArgument.make_i(height)
+    args_array[unsafe_offset=4] = WLArgument.make_i(stride)
+    args_array[unsafe_offset=5] = WLArgument.make_u(format)
     return _proxy_constructor_versioned(self, 0, args_array, "wl_buffer", 3)
 
 
@@ -136,7 +136,7 @@ def wl_shm_pool_destroy(self: WLPtr):
 def wl_shm_pool_resize(self: WLPtr, size: Int32):
     # opcode 2
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_i(size)
+    args_array[unsafe_offset=0] = WLArgument.make_i(size)
     wl_proxy_marshal_array(self, 2, args_array)
 
 
@@ -301,8 +301,8 @@ def wl_shm_create_pool(self: WLPtr, fd: Int32, size: Int32) raises -> WLPtr:
     # opcode 0: create_pool, creates wl_shm_pool
     # slots follow wire-signature positions (new_id slot zeroed)
     var args_array = stack_allocation[3, WLArgument]()
-    args_array[1] = WLArgument.make_h(fd)
-    args_array[2] = WLArgument.make_i(size)
+    args_array[unsafe_offset=1] = WLArgument.make_h(fd)
+    args_array[unsafe_offset=2] = WLArgument.make_i(size)
     return _proxy_constructor_versioned(self, 0, args_array, "wl_shm_pool", 3)
 
 
@@ -357,16 +357,16 @@ comptime DATA_OFFER_ERROR_INVALID_OFFER: UInt32 = 3
 def wl_data_offer_accept(self: WLPtr, serial: UInt32, mime_type: WLString):
     # opcode 0
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_u(serial)
-    args_array[1] = WLArgument.make_s(mime_type)
+    args_array[unsafe_offset=0] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=1] = WLArgument.make_s(mime_type)
     wl_proxy_marshal_array(self, 0, args_array)
 
 
 def wl_data_offer_receive(self: WLPtr, mime_type: WLString, fd: Int32):
     # opcode 1
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_s(mime_type)
-    args_array[1] = WLArgument.make_h(fd)
+    args_array[unsafe_offset=0] = WLArgument.make_s(mime_type)
+    args_array[unsafe_offset=1] = WLArgument.make_h(fd)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
@@ -386,8 +386,8 @@ def wl_data_offer_finish(self: WLPtr):
 def wl_data_offer_set_actions(self: WLPtr, dnd_actions: UInt32, preferred_action: UInt32):
     # opcode 4
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_u(dnd_actions)
-    args_array[1] = WLArgument.make_u(preferred_action)
+    args_array[unsafe_offset=0] = WLArgument.make_u(dnd_actions)
+    args_array[unsafe_offset=1] = WLArgument.make_u(preferred_action)
     wl_proxy_marshal_array(self, 4, args_array)
 
 
@@ -425,7 +425,7 @@ comptime DATA_SOURCE_ERROR_INVALID_SOURCE: UInt32 = 1
 def wl_data_source_offer(self: WLPtr, mime_type: WLString):
     # opcode 0
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_s(mime_type)
+    args_array[unsafe_offset=0] = WLArgument.make_s(mime_type)
     wl_proxy_marshal_array(self, 0, args_array)
 
 
@@ -439,7 +439,7 @@ def wl_data_source_destroy(self: WLPtr):
 def wl_data_source_set_actions(self: WLPtr, dnd_actions: UInt32):
     # opcode 2
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_u(dnd_actions)
+    args_array[unsafe_offset=0] = WLArgument.make_u(dnd_actions)
     wl_proxy_marshal_array(self, 2, args_array)
 
 
@@ -495,18 +495,18 @@ comptime DATA_DEVICE_ERROR_USED_SOURCE: UInt32 = 1
 def wl_data_device_start_drag(self: WLPtr, source: Pointer[NoneType, MutUntrackedOrigin], origin: Pointer[NoneType, MutUntrackedOrigin], icon: Pointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 0
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_o(source)
-    args_array[1] = WLArgument.make_o(origin)
-    args_array[2] = WLArgument.make_o(icon)
-    args_array[3] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=0] = WLArgument.make_o(source)
+    args_array[unsafe_offset=1] = WLArgument.make_o(origin)
+    args_array[unsafe_offset=2] = WLArgument.make_o(icon)
+    args_array[unsafe_offset=3] = WLArgument.make_u(serial)
     wl_proxy_marshal_array(self, 0, args_array)
 
 
 def wl_data_device_set_selection(self: WLPtr, source: Pointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 1
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_o(source)
-    args_array[1] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=0] = WLArgument.make_o(source)
+    args_array[unsafe_offset=1] = WLArgument.make_u(serial)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
@@ -574,7 +574,7 @@ def wl_data_device_manager_get_data_device(self: WLPtr, seat: Pointer[NoneType, 
     # opcode 1: get_data_device, creates wl_data_device
     # slots follow wire-signature positions (new_id slot zeroed)
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[1] = WLArgument.make_o(seat)
+    args_array[unsafe_offset=1] = WLArgument.make_o(seat)
     return _proxy_constructor_versioned(self, 1, args_array, "wl_data_device", 4)
 
 
@@ -593,7 +593,7 @@ def wl_shell_get_shell_surface(self: WLPtr, surface: Pointer[NoneType, MutUntrac
     # opcode 0: get_shell_surface, creates wl_shell_surface
     # slots follow wire-signature positions (new_id slot zeroed)
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[1] = WLArgument.make_o(surface)
+    args_array[unsafe_offset=1] = WLArgument.make_o(surface)
     return _proxy_constructor_versioned(self, 0, args_array, "wl_shell_surface", 1)
 
 
@@ -622,24 +622,24 @@ comptime SHELL_SURFACE_FULLSCREEN_METHOD_FILL: UInt32 = 3
 def wl_shell_surface_pong(self: WLPtr, serial: UInt32):
     # opcode 0
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=0] = WLArgument.make_u(serial)
     wl_proxy_marshal_array(self, 0, args_array)
 
 
 def wl_shell_surface_move(self: WLPtr, seat: Pointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 1
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_o(seat)
-    args_array[1] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=0] = WLArgument.make_o(seat)
+    args_array[unsafe_offset=1] = WLArgument.make_u(serial)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
 def wl_shell_surface_resize(self: WLPtr, seat: Pointer[NoneType, MutUntrackedOrigin], serial: UInt32, edges: UInt32):
     # opcode 2
     var args_array = stack_allocation[3, WLArgument]()
-    args_array[0] = WLArgument.make_o(seat)
-    args_array[1] = WLArgument.make_u(serial)
-    args_array[2] = WLArgument.make_u(edges)
+    args_array[unsafe_offset=0] = WLArgument.make_o(seat)
+    args_array[unsafe_offset=1] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=2] = WLArgument.make_u(edges)
     wl_proxy_marshal_array(self, 2, args_array)
 
 
@@ -652,52 +652,52 @@ def wl_shell_surface_set_toplevel(self: WLPtr):
 def wl_shell_surface_set_transient(self: WLPtr, parent: Pointer[NoneType, MutUntrackedOrigin], x: Int32, y: Int32, flags: UInt32):
     # opcode 4
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_o(parent)
-    args_array[1] = WLArgument.make_i(x)
-    args_array[2] = WLArgument.make_i(y)
-    args_array[3] = WLArgument.make_u(flags)
+    args_array[unsafe_offset=0] = WLArgument.make_o(parent)
+    args_array[unsafe_offset=1] = WLArgument.make_i(x)
+    args_array[unsafe_offset=2] = WLArgument.make_i(y)
+    args_array[unsafe_offset=3] = WLArgument.make_u(flags)
     wl_proxy_marshal_array(self, 4, args_array)
 
 
 def wl_shell_surface_set_fullscreen(self: WLPtr, method: UInt32, framerate: UInt32, output: Pointer[NoneType, MutUntrackedOrigin]):
     # opcode 5
     var args_array = stack_allocation[3, WLArgument]()
-    args_array[0] = WLArgument.make_u(method)
-    args_array[1] = WLArgument.make_u(framerate)
-    args_array[2] = WLArgument.make_o(output)
+    args_array[unsafe_offset=0] = WLArgument.make_u(method)
+    args_array[unsafe_offset=1] = WLArgument.make_u(framerate)
+    args_array[unsafe_offset=2] = WLArgument.make_o(output)
     wl_proxy_marshal_array(self, 5, args_array)
 
 
 def wl_shell_surface_set_popup(self: WLPtr, seat: Pointer[NoneType, MutUntrackedOrigin], serial: UInt32, parent: Pointer[NoneType, MutUntrackedOrigin], x: Int32, y: Int32, flags: UInt32):
     # opcode 6
     var args_array = stack_allocation[6, WLArgument]()
-    args_array[0] = WLArgument.make_o(seat)
-    args_array[1] = WLArgument.make_u(serial)
-    args_array[2] = WLArgument.make_o(parent)
-    args_array[3] = WLArgument.make_i(x)
-    args_array[4] = WLArgument.make_i(y)
-    args_array[5] = WLArgument.make_u(flags)
+    args_array[unsafe_offset=0] = WLArgument.make_o(seat)
+    args_array[unsafe_offset=1] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=2] = WLArgument.make_o(parent)
+    args_array[unsafe_offset=3] = WLArgument.make_i(x)
+    args_array[unsafe_offset=4] = WLArgument.make_i(y)
+    args_array[unsafe_offset=5] = WLArgument.make_u(flags)
     wl_proxy_marshal_array(self, 6, args_array)
 
 
 def wl_shell_surface_set_maximized(self: WLPtr, output: Pointer[NoneType, MutUntrackedOrigin]):
     # opcode 7
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_o(output)
+    args_array[unsafe_offset=0] = WLArgument.make_o(output)
     wl_proxy_marshal_array(self, 7, args_array)
 
 
 def wl_shell_surface_set_title(self: WLPtr, title: WLString):
     # opcode 8
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_s(title)
+    args_array[unsafe_offset=0] = WLArgument.make_s(title)
     wl_proxy_marshal_array(self, 8, args_array)
 
 
 def wl_shell_surface_set_class(self: WLPtr, class_: WLString):
     # opcode 9
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_s(class_)
+    args_array[unsafe_offset=0] = WLArgument.make_s(class_)
     wl_proxy_marshal_array(self, 9, args_array)
 
 
@@ -745,19 +745,19 @@ def wl_surface_destroy(self: WLPtr):
 def wl_surface_attach(self: WLPtr, buffer: Pointer[NoneType, MutUntrackedOrigin], x: Int32, y: Int32):
     # opcode 1
     var args_array = stack_allocation[3, WLArgument]()
-    args_array[0] = WLArgument.make_o(buffer)
-    args_array[1] = WLArgument.make_i(x)
-    args_array[2] = WLArgument.make_i(y)
+    args_array[unsafe_offset=0] = WLArgument.make_o(buffer)
+    args_array[unsafe_offset=1] = WLArgument.make_i(x)
+    args_array[unsafe_offset=2] = WLArgument.make_i(y)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
 def wl_surface_damage(self: WLPtr, x: Int32, y: Int32, width: Int32, height: Int32):
     # opcode 2
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_i(x)
-    args_array[1] = WLArgument.make_i(y)
-    args_array[2] = WLArgument.make_i(width)
-    args_array[3] = WLArgument.make_i(height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(x)
+    args_array[unsafe_offset=1] = WLArgument.make_i(y)
+    args_array[unsafe_offset=2] = WLArgument.make_i(width)
+    args_array[unsafe_offset=3] = WLArgument.make_i(height)
     wl_proxy_marshal_array(self, 2, args_array)
 
 
@@ -772,14 +772,14 @@ def wl_surface_frame(self: WLPtr) raises -> WLPtr:
 def wl_surface_set_opaque_region(self: WLPtr, region: Pointer[NoneType, MutUntrackedOrigin]):
     # opcode 4
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_o(region)
+    args_array[unsafe_offset=0] = WLArgument.make_o(region)
     wl_proxy_marshal_array(self, 4, args_array)
 
 
 def wl_surface_set_input_region(self: WLPtr, region: Pointer[NoneType, MutUntrackedOrigin]):
     # opcode 5
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_o(region)
+    args_array[unsafe_offset=0] = WLArgument.make_o(region)
     wl_proxy_marshal_array(self, 5, args_array)
 
 
@@ -792,32 +792,32 @@ def wl_surface_commit(self: WLPtr):
 def wl_surface_set_buffer_transform(self: WLPtr, transform: Int32):
     # opcode 7
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_i(transform)
+    args_array[unsafe_offset=0] = WLArgument.make_i(transform)
     wl_proxy_marshal_array(self, 7, args_array)
 
 
 def wl_surface_set_buffer_scale(self: WLPtr, scale: Int32):
     # opcode 8
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_i(scale)
+    args_array[unsafe_offset=0] = WLArgument.make_i(scale)
     wl_proxy_marshal_array(self, 8, args_array)
 
 
 def wl_surface_damage_buffer(self: WLPtr, x: Int32, y: Int32, width: Int32, height: Int32):
     # opcode 9
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_i(x)
-    args_array[1] = WLArgument.make_i(y)
-    args_array[2] = WLArgument.make_i(width)
-    args_array[3] = WLArgument.make_i(height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(x)
+    args_array[unsafe_offset=1] = WLArgument.make_i(y)
+    args_array[unsafe_offset=2] = WLArgument.make_i(width)
+    args_array[unsafe_offset=3] = WLArgument.make_i(height)
     wl_proxy_marshal_array(self, 9, args_array)
 
 
 def wl_surface_offset(self: WLPtr, x: Int32, y: Int32):
     # opcode 10
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_i(x)
-    args_array[1] = WLArgument.make_i(y)
+    args_array[unsafe_offset=0] = WLArgument.make_i(x)
+    args_array[unsafe_offset=1] = WLArgument.make_i(y)
     wl_proxy_marshal_array(self, 10, args_array)
 
 
@@ -943,10 +943,10 @@ comptime POINTER_AXIS_RELATIVE_DIRECTION_INVERTED: UInt32 = 1
 def wl_pointer_set_cursor(self: WLPtr, serial: UInt32, surface: Pointer[NoneType, MutUntrackedOrigin], hotspot_x: Int32, hotspot_y: Int32):
     # opcode 0
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_u(serial)
-    args_array[1] = WLArgument.make_o(surface)
-    args_array[2] = WLArgument.make_i(hotspot_x)
-    args_array[3] = WLArgument.make_i(hotspot_y)
+    args_array[unsafe_offset=0] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=1] = WLArgument.make_o(surface)
+    args_array[unsafe_offset=2] = WLArgument.make_i(hotspot_x)
+    args_array[unsafe_offset=3] = WLArgument.make_i(hotspot_y)
     wl_proxy_marshal_array(self, 0, args_array)
 
 
@@ -1219,20 +1219,20 @@ def wl_region_destroy(self: WLPtr):
 def wl_region_add(self: WLPtr, x: Int32, y: Int32, width: Int32, height: Int32):
     # opcode 1
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_i(x)
-    args_array[1] = WLArgument.make_i(y)
-    args_array[2] = WLArgument.make_i(width)
-    args_array[3] = WLArgument.make_i(height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(x)
+    args_array[unsafe_offset=1] = WLArgument.make_i(y)
+    args_array[unsafe_offset=2] = WLArgument.make_i(width)
+    args_array[unsafe_offset=3] = WLArgument.make_i(height)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
 def wl_region_subtract(self: WLPtr, x: Int32, y: Int32, width: Int32, height: Int32):
     # opcode 2
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_i(x)
-    args_array[1] = WLArgument.make_i(y)
-    args_array[2] = WLArgument.make_i(width)
-    args_array[3] = WLArgument.make_i(height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(x)
+    args_array[unsafe_offset=1] = WLArgument.make_i(y)
+    args_array[unsafe_offset=2] = WLArgument.make_i(width)
+    args_array[unsafe_offset=3] = WLArgument.make_i(height)
     wl_proxy_marshal_array(self, 2, args_array)
 
 
@@ -1252,8 +1252,8 @@ def wl_subcompositor_get_subsurface(self: WLPtr, surface: Pointer[NoneType, MutU
     # opcode 1: get_subsurface, creates wl_subsurface
     # slots follow wire-signature positions (new_id slot zeroed)
     var args_array = stack_allocation[3, WLArgument]()
-    args_array[1] = WLArgument.make_o(surface)
-    args_array[2] = WLArgument.make_o(parent)
+    args_array[unsafe_offset=1] = WLArgument.make_o(surface)
+    args_array[unsafe_offset=2] = WLArgument.make_o(parent)
     return _proxy_constructor_versioned(self, 1, args_array, "wl_subsurface", 1)
 
 
@@ -1270,22 +1270,22 @@ def wl_subsurface_destroy(self: WLPtr):
 def wl_subsurface_set_position(self: WLPtr, x: Int32, y: Int32):
     # opcode 1
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_i(x)
-    args_array[1] = WLArgument.make_i(y)
+    args_array[unsafe_offset=0] = WLArgument.make_i(x)
+    args_array[unsafe_offset=1] = WLArgument.make_i(y)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
 def wl_subsurface_place_above(self: WLPtr, sibling: Pointer[NoneType, MutUntrackedOrigin]):
     # opcode 2
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_o(sibling)
+    args_array[unsafe_offset=0] = WLArgument.make_o(sibling)
     wl_proxy_marshal_array(self, 2, args_array)
 
 
 def wl_subsurface_place_below(self: WLPtr, sibling: Pointer[NoneType, MutUntrackedOrigin]):
     # opcode 3
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_o(sibling)
+    args_array[unsafe_offset=0] = WLArgument.make_o(sibling)
     wl_proxy_marshal_array(self, 3, args_array)
 
 
@@ -1314,14 +1314,14 @@ def wl_fixes_destroy(self: WLPtr):
 def wl_fixes_destroy_registry(self: WLPtr, registry: Pointer[NoneType, MutUntrackedOrigin]):
     # opcode 1
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_o(registry)
+    args_array[unsafe_offset=0] = WLArgument.make_o(registry)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
 def wl_fixes_ack_global_remove(self: WLPtr, registry: Pointer[NoneType, MutUntrackedOrigin], name: UInt32):
     # opcode 2
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_o(registry)
-    args_array[1] = WLArgument.make_u(name)
+    args_array[unsafe_offset=0] = WLArgument.make_o(registry)
+    args_array[unsafe_offset=1] = WLArgument.make_u(name)
     wl_proxy_marshal_array(self, 2, args_array)
 

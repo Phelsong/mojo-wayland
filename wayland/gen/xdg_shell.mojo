@@ -34,14 +34,14 @@ def xdg_wm_base_get_xdg_surface(self: WLPtr, surface: Pointer[NoneType, MutUntra
     # opcode 2: get_xdg_surface, creates xdg_surface
     # slots follow wire-signature positions (new_id slot zeroed)
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[1] = WLArgument.make_o(surface)
+    args_array[unsafe_offset=1] = WLArgument.make_o(surface)
     return _proxy_constructor_versioned(self, 2, args_array, "xdg_surface", 7)
 
 
 def xdg_wm_base_pong(self: WLPtr, serial: UInt32):
     # opcode 3
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=0] = WLArgument.make_u(serial)
     wl_proxy_marshal_array(self, 3, args_array)
 
 
@@ -96,47 +96,47 @@ def xdg_positioner_destroy(self: WLPtr):
 def xdg_positioner_set_size(self: WLPtr, width: Int32, height: Int32):
     # opcode 1
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_i(width)
-    args_array[1] = WLArgument.make_i(height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(width)
+    args_array[unsafe_offset=1] = WLArgument.make_i(height)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
 def xdg_positioner_set_anchor_rect(self: WLPtr, x: Int32, y: Int32, width: Int32, height: Int32):
     # opcode 2
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_i(x)
-    args_array[1] = WLArgument.make_i(y)
-    args_array[2] = WLArgument.make_i(width)
-    args_array[3] = WLArgument.make_i(height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(x)
+    args_array[unsafe_offset=1] = WLArgument.make_i(y)
+    args_array[unsafe_offset=2] = WLArgument.make_i(width)
+    args_array[unsafe_offset=3] = WLArgument.make_i(height)
     wl_proxy_marshal_array(self, 2, args_array)
 
 
 def xdg_positioner_set_anchor(self: WLPtr, anchor: UInt32):
     # opcode 3
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_u(anchor)
+    args_array[unsafe_offset=0] = WLArgument.make_u(anchor)
     wl_proxy_marshal_array(self, 3, args_array)
 
 
 def xdg_positioner_set_gravity(self: WLPtr, gravity: UInt32):
     # opcode 4
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_u(gravity)
+    args_array[unsafe_offset=0] = WLArgument.make_u(gravity)
     wl_proxy_marshal_array(self, 4, args_array)
 
 
 def xdg_positioner_set_constraint_adjustment(self: WLPtr, constraint_adjustment: UInt32):
     # opcode 5
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_u(constraint_adjustment)
+    args_array[unsafe_offset=0] = WLArgument.make_u(constraint_adjustment)
     wl_proxy_marshal_array(self, 5, args_array)
 
 
 def xdg_positioner_set_offset(self: WLPtr, x: Int32, y: Int32):
     # opcode 6
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_i(x)
-    args_array[1] = WLArgument.make_i(y)
+    args_array[unsafe_offset=0] = WLArgument.make_i(x)
+    args_array[unsafe_offset=1] = WLArgument.make_i(y)
     wl_proxy_marshal_array(self, 6, args_array)
 
 
@@ -149,15 +149,15 @@ def xdg_positioner_set_reactive(self: WLPtr):
 def xdg_positioner_set_parent_size(self: WLPtr, parent_width: Int32, parent_height: Int32):
     # opcode 8
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_i(parent_width)
-    args_array[1] = WLArgument.make_i(parent_height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(parent_width)
+    args_array[unsafe_offset=1] = WLArgument.make_i(parent_height)
     wl_proxy_marshal_array(self, 8, args_array)
 
 
 def xdg_positioner_set_parent_configure(self: WLPtr, serial: UInt32):
     # opcode 9
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=0] = WLArgument.make_u(serial)
     wl_proxy_marshal_array(self, 9, args_array)
 
 
@@ -191,25 +191,25 @@ def xdg_surface_get_popup(self: WLPtr, parent: Pointer[NoneType, MutUntrackedOri
     # opcode 2: get_popup, creates xdg_popup
     # slots follow wire-signature positions (new_id slot zeroed)
     var args_array = stack_allocation[3, WLArgument]()
-    args_array[1] = WLArgument.make_o(parent)
-    args_array[2] = WLArgument.make_o(positioner)
+    args_array[unsafe_offset=1] = WLArgument.make_o(parent)
+    args_array[unsafe_offset=2] = WLArgument.make_o(positioner)
     return _proxy_constructor_versioned(self, 2, args_array, "xdg_popup", 7)
 
 
 def xdg_surface_set_window_geometry(self: WLPtr, x: Int32, y: Int32, width: Int32, height: Int32):
     # opcode 3
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_i(x)
-    args_array[1] = WLArgument.make_i(y)
-    args_array[2] = WLArgument.make_i(width)
-    args_array[3] = WLArgument.make_i(height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(x)
+    args_array[unsafe_offset=1] = WLArgument.make_i(y)
+    args_array[unsafe_offset=2] = WLArgument.make_i(width)
+    args_array[unsafe_offset=3] = WLArgument.make_i(height)
     wl_proxy_marshal_array(self, 3, args_array)
 
 
 def xdg_surface_ack_configure(self: WLPtr, serial: UInt32):
     # opcode 4
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=0] = WLArgument.make_u(serial)
     wl_proxy_marshal_array(self, 4, args_array)
 
 
@@ -272,64 +272,64 @@ def xdg_toplevel_destroy(self: WLPtr):
 def xdg_toplevel_set_parent(self: WLPtr, parent: Pointer[NoneType, MutUntrackedOrigin]):
     # opcode 1
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_o(parent)
+    args_array[unsafe_offset=0] = WLArgument.make_o(parent)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
 def xdg_toplevel_set_title(self: WLPtr, title: WLString):
     # opcode 2
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_s(title)
+    args_array[unsafe_offset=0] = WLArgument.make_s(title)
     wl_proxy_marshal_array(self, 2, args_array)
 
 
 def xdg_toplevel_set_app_id(self: WLPtr, app_id: WLString):
     # opcode 3
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_s(app_id)
+    args_array[unsafe_offset=0] = WLArgument.make_s(app_id)
     wl_proxy_marshal_array(self, 3, args_array)
 
 
 def xdg_toplevel_show_window_menu(self: WLPtr, seat: Pointer[NoneType, MutUntrackedOrigin], serial: UInt32, x: Int32, y: Int32):
     # opcode 4
     var args_array = stack_allocation[4, WLArgument]()
-    args_array[0] = WLArgument.make_o(seat)
-    args_array[1] = WLArgument.make_u(serial)
-    args_array[2] = WLArgument.make_i(x)
-    args_array[3] = WLArgument.make_i(y)
+    args_array[unsafe_offset=0] = WLArgument.make_o(seat)
+    args_array[unsafe_offset=1] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=2] = WLArgument.make_i(x)
+    args_array[unsafe_offset=3] = WLArgument.make_i(y)
     wl_proxy_marshal_array(self, 4, args_array)
 
 
 def xdg_toplevel_move(self: WLPtr, seat: Pointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 5
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_o(seat)
-    args_array[1] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=0] = WLArgument.make_o(seat)
+    args_array[unsafe_offset=1] = WLArgument.make_u(serial)
     wl_proxy_marshal_array(self, 5, args_array)
 
 
 def xdg_toplevel_resize(self: WLPtr, seat: Pointer[NoneType, MutUntrackedOrigin], serial: UInt32, edges: UInt32):
     # opcode 6
     var args_array = stack_allocation[3, WLArgument]()
-    args_array[0] = WLArgument.make_o(seat)
-    args_array[1] = WLArgument.make_u(serial)
-    args_array[2] = WLArgument.make_u(edges)
+    args_array[unsafe_offset=0] = WLArgument.make_o(seat)
+    args_array[unsafe_offset=1] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=2] = WLArgument.make_u(edges)
     wl_proxy_marshal_array(self, 6, args_array)
 
 
 def xdg_toplevel_set_max_size(self: WLPtr, width: Int32, height: Int32):
     # opcode 7
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_i(width)
-    args_array[1] = WLArgument.make_i(height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(width)
+    args_array[unsafe_offset=1] = WLArgument.make_i(height)
     wl_proxy_marshal_array(self, 7, args_array)
 
 
 def xdg_toplevel_set_min_size(self: WLPtr, width: Int32, height: Int32):
     # opcode 8
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_i(width)
-    args_array[1] = WLArgument.make_i(height)
+    args_array[unsafe_offset=0] = WLArgument.make_i(width)
+    args_array[unsafe_offset=1] = WLArgument.make_i(height)
     wl_proxy_marshal_array(self, 8, args_array)
 
 
@@ -348,7 +348,7 @@ def xdg_toplevel_unset_maximized(self: WLPtr):
 def xdg_toplevel_set_fullscreen(self: WLPtr, output: Pointer[NoneType, MutUntrackedOrigin]):
     # opcode 11
     var args_array = stack_allocation[1, WLArgument]()
-    args_array[0] = WLArgument.make_o(output)
+    args_array[unsafe_offset=0] = WLArgument.make_o(output)
     wl_proxy_marshal_array(self, 11, args_array)
 
 
@@ -407,16 +407,16 @@ def xdg_popup_destroy(self: WLPtr):
 def xdg_popup_grab(self: WLPtr, seat: Pointer[NoneType, MutUntrackedOrigin], serial: UInt32):
     # opcode 1
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_o(seat)
-    args_array[1] = WLArgument.make_u(serial)
+    args_array[unsafe_offset=0] = WLArgument.make_o(seat)
+    args_array[unsafe_offset=1] = WLArgument.make_u(serial)
     wl_proxy_marshal_array(self, 1, args_array)
 
 
 def xdg_popup_reposition(self: WLPtr, positioner: Pointer[NoneType, MutUntrackedOrigin], token: UInt32):
     # opcode 2
     var args_array = stack_allocation[2, WLArgument]()
-    args_array[0] = WLArgument.make_o(positioner)
-    args_array[1] = WLArgument.make_u(token)
+    args_array[unsafe_offset=0] = WLArgument.make_o(positioner)
+    args_array[unsafe_offset=1] = WLArgument.make_u(token)
     wl_proxy_marshal_array(self, 2, args_array)
 
 

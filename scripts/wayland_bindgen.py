@@ -286,7 +286,7 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
                 if a.type == "new_id":
                     continue  # slot stays zeroed; libwayland writes the new proxy id
                 tag = TYPE_MAP[(a.type, a.interface is not None)][1]
-                lines.append(f"{body_indent}args_array[{i}] = WLArgument.make_{tag}({a.name})")
+                lines.append(f"{body_indent}args_array[unsafe_offset={i}] = WLArgument.make_{tag}({a.name})")
             version = int(iface.version or 1)
             lines.append(
                 f"{body_indent}return _proxy_constructor_versioned("
@@ -319,10 +319,10 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
             m = 0
             for a in non_new:
                 tag = TYPE_MAP[(a.type, a.interface is not None)][1]
-                lines.append(f"{body_indent}args_array[{m}] = WLArgument.make_{tag}({a.name})")
+                lines.append(f"{body_indent}args_array[unsafe_offset={m}] = WLArgument.make_{tag}({a.name})")
                 m += 1
-            lines.append(f"{body_indent}args_array[{len(non_new)}] = WLArgument.make_s(iface_name)")
-            lines.append(f"{body_indent}args_array[{len(non_new) + 1}] = WLArgument.make_u(version)")
+            lines.append(f"{body_indent}args_array[unsafe_offset={len(non_new)}] = WLArgument.make_s(iface_name)")
+            lines.append(f"{body_indent}args_array[unsafe_offset={len(non_new) + 1}] = WLArgument.make_u(version)")
             lines.append(f"{body_indent}return wl_proxy_marshal_array_constructor_versioned(self, {op}, args_array, iface, version)")
         return "\n".join(lines) + "\n"
 
@@ -334,7 +334,7 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
             if a.type == "new_id":
                 continue  # slot zeroed; args marshal by wire position
             tag = TYPE_MAP[(a.type, a.interface is not None)][1]
-            lines.append(f"{body_indent}args_array[{i}] = WLArgument.make_{tag}({a.name})")
+            lines.append(f"{body_indent}args_array[unsafe_offset={i}] = WLArgument.make_{tag}({a.name})")
         lines.append(f"{body_indent}wl_proxy_marshal_array(self, {op}, args_array)")
         lines.append(f"{body_indent}wl_proxy_destroy(self)")
         return "\n".join(lines) + "\n"
@@ -347,7 +347,7 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
         if a.type == "new_id":
             continue
         tag = TYPE_MAP[(a.type, a.interface is not None)][1]
-        lines.append(f"{body_indent}args_array[{i}] = WLArgument.make_{tag}({a.name})")
+        lines.append(f"{body_indent}args_array[unsafe_offset={i}] = WLArgument.make_{tag}({a.name})")
     lines.append(f"{body_indent}wl_proxy_marshal_array(self, {op}, args_array)")
     return "\n".join(lines) + "\n"
 
