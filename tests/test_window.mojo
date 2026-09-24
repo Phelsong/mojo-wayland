@@ -61,7 +61,12 @@ def _mmap(
 ) -> WLPtr:
     # addr is a raw address (0 = NULL for kernel to choose)
     return external_call["mmap", WLPtr](
-        UInt64(addr), UInt64(length), UInt64(prot), UInt64(flags), UInt64(fd), UInt64(offset)
+        UInt64(addr),
+        UInt64(length),
+        UInt64(prot),
+        UInt64(flags),
+        UInt64(fd),
+        UInt64(offset),
     )
 
 
@@ -98,7 +103,9 @@ def str_to_cptr(s: String) -> UnsafePointer[Int8, MutUntrackedOrigin]:
     var tmp: String = s
     var cs = tmp.as_c_string_slice()
     var n = len(cs)
-    var buf = UnsafePointer[Int8, MutUntrackedOrigin](unsafe_from_address=Int(_malloc(Int(n) + 1)))
+    var buf = UnsafePointer[Int8, MutUntrackedOrigin](
+        unsafe_from_address=Int(_malloc(Int(n) + 1))
+    )
     var bytes = tmp.as_bytes()
     for i in range(len(bytes)):
         buf[i] = Int8(bytes[i])
@@ -145,7 +152,9 @@ struct GlobalInfo(Copyable, Movable):
         self.version = version
 
 
-def find_global(queue: WLPtr, display: WLPtr, want: String) raises -> GlobalInfo:
+def find_global(
+    queue: WLPtr, display: WLPtr, want: String
+) raises -> GlobalInfo:
     """Returns (name, version) for a global; dispatches while looking."""
     var args = stack_allocation[MAX_EVENT_ARGS, WLArgument]()
     while True:
@@ -162,7 +171,9 @@ def find_global(queue: WLPtr, display: WLPtr, want: String) raises -> GlobalInfo
 
 def store_pixel(base: WLPtr, offset: Int, r: UInt8, g: UInt8, b: UInt8):
     # ARGB8888 little-endian: B, G, R, X byte order in memory
-    var p = UnsafePointer[UInt8, MutUntrackedOrigin](unsafe_from_address=Int(base) + offset)
+    var p = UnsafePointer[UInt8, MutUntrackedOrigin](
+        unsafe_from_address=Int(base) + offset
+    )
     p[0] = b
     p[1] = g
     p[2] = r
@@ -201,10 +212,28 @@ def main() raises:
     print("globals: compositor", comp_name, "shm", shm_name, "wm_base", wm_name)
 
     # bind (xdg_wm_base v3 is what we exercise)
-    var compositor = wl_registry_bind(registry, shim_interface("wl_compositor"), str_to_wlstring("wl_compositor"), comp_name, 4)
-    var shm = wl_registry_bind(registry, shim_interface("wl_shm"), str_to_wlstring("wl_shm"), shm_name, 1)
+    var compositor = wl_registry_bind(
+        registry,
+        shim_interface("wl_compositor"),
+        str_to_wlstring("wl_compositor"),
+        comp_name,
+        4,
+    )
+    var shm = wl_registry_bind(
+        registry,
+        shim_interface("wl_shm"),
+        str_to_wlstring("wl_shm"),
+        shm_name,
+        1,
+    )
     var wm_ver_use = UInt32(3) if wm_ver > 3 else wm_ver
-    var wm_base = wl_registry_bind(registry, shim_interface("xdg_wm_base"), str_to_wlstring("xdg_wm_base"), wm_name, wm_ver_use)
+    var wm_base = wl_registry_bind(
+        registry,
+        shim_interface("xdg_wm_base"),
+        str_to_wlstring("xdg_wm_base"),
+        wm_name,
+        wm_ver_use,
+    )
     if Int(compositor) == 0 or Int(shm) == 0 or Int(wm_base) == 0:
         raise Error("bind failed")
     print("bound compositor + shm + xdg_wm_base")
@@ -264,7 +293,9 @@ def main() raises:
     paint_gradient(pixels)
 
     var pool = wl_shm_create_pool(shm, fd, Int32(POOL_SIZE))
-    var buffer = wl_shm_pool_create_buffer(pool, 0, WIDTH, HEIGHT, Int32(STRIDE), SHM_FORMAT_ARGB8888)
+    var buffer = wl_shm_pool_create_buffer(
+        pool, 0, WIDTH, HEIGHT, Int32(STRIDE), SHM_FORMAT_ARGB8888
+    )
     wl_surface_attach(surface, buffer, 0, 0)
     wl_surface_damage(surface, 0, 0, WIDTH, HEIGHT)
     wl_surface_commit(surface)

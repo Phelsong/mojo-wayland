@@ -22,7 +22,7 @@ def _cstr(s: String) -> Pointer[Int8, MutUntrackedOrigin]:
     """Null-terminated C char* view into a Mojo String (borrowed).
     Copies internally so immutable callers are fine."""
     var copy = String(s)
-    var cs = copy.as_c_string_slice()
+    var cs = copy.as_c_string_span()
     return rebind[Pointer[Int8, MutUntrackedOrigin]](cs)
 
 
@@ -31,7 +31,13 @@ def _shim_interface(name: String) -> WLPtr:
     return external_call["wayland_shim_interface", WLPtr](_cstr(name))
 
 
-def _proxy_constructor_versioned(proxy: WLPtr, opcode: UInt32, args: Pointer[WLArgument, MutUntrackedOrigin], iface_name: String, version: UInt32) raises -> WLPtr:
+def _proxy_constructor_versioned(
+    proxy: WLPtr,
+    opcode: UInt32,
+    args: Pointer[WLArgument, MutUntrackedOrigin],
+    iface_name: String,
+    version: UInt32,
+) raises -> WLPtr:
     """Constructor helper: resolves the interface record by name through the
     C shim (wl_*_interface are data symbols, invisible to external_call).
 
@@ -43,7 +49,9 @@ def _proxy_constructor_versioned(proxy: WLPtr, opcode: UInt32, args: Pointer[WLA
     if Int(iface) == 0:
         raise Error("wayland: unknown interface " + iface_name)
     var parent_version = wl_proxy_get_version(proxy)
-    return wl_proxy_marshal_array_constructor_versioned(proxy, opcode, args, iface, parent_version)
+    return wl_proxy_marshal_array_constructor_versioned(
+        proxy, opcode, args, iface, parent_version
+    )
 
 
 # --- event capture shim ---
@@ -52,18 +60,30 @@ def _proxy_constructor_versioned(proxy: WLPtr, opcode: UInt32, args: Pointer[WLA
 # handle; pop() takes the queue so the C side needs no proxy lookups.
 
 
-def _shim_listen(proxy: WLPtr, iface_name: String, out_queue: Pointer[WLPtr, MutUntrackedOrigin]) -> Int32:
+def _shim_listen(
+    proxy: WLPtr,
+    iface_name: String,
+    out_queue: Pointer[WLPtr, MutUntrackedOrigin],
+) -> Int32:
     """Install the capture dispatcher on a proxy. Returns 0 on success and
     writes the queue handle to out_queue (out param: the C side writes one
     pointer, so this takes a single-slot buffer, not the slot's value)."""
-    return external_call["wayland_shim_listen", Int32](proxy, _cstr(iface_name), out_queue)
+    return external_call["wayland_shim_listen", Int32](
+        proxy, _cstr(iface_name), out_queue
+    )
 
 
-def _shim_event_pop(queue: WLPtr, opcode: UInt32, out_args: Pointer[WLArgument, MutUntrackedOrigin]) -> Int32:
+def _shim_event_pop(
+    queue: WLPtr,
+    opcode: UInt32,
+    out_args: Pointer[WLArgument, MutUntrackedOrigin],
+) -> Int32:
     """Pop one captured event into out_args. Returns its opcode or -1.
     Any returned string args are malloc'd copies owned by the caller
     (free via wayland_shim_string_free)."""
-    return external_call["wayland_shim_event_pop", Int32](queue, opcode, out_args)
+    return external_call["wayland_shim_event_pop", Int32](
+        queue, opcode, out_args
+    )
 
 
 def _shim_string_free(s: WLString):
@@ -120,8 +140,14 @@ def wl_display_get_error(display: WLPtr) -> Int32:
     return external_call["wl_display_get_error", Int32](display)
 
 
-def wl_display_get_protocol_error(display: WLPtr, out_interface: WLPtr, out_id: Pointer[UInt32, MutUntrackedOrigin]) -> UInt32:
-    return external_call["wl_display_get_protocol_error", UInt32](display, out_interface, out_id)
+def wl_display_get_protocol_error(
+    display: WLPtr,
+    out_interface: WLPtr,
+    out_id: Pointer[UInt32, MutUntrackedOrigin],
+) -> UInt32:
+    return external_call["wl_display_get_protocol_error", UInt32](
+        display, out_interface, out_id
+    )
 
 
 def wl_proxy_get_id(proxy: WLPtr) -> UInt32:
@@ -136,16 +162,35 @@ def wl_proxy_destroy(proxy: WLPtr):
     external_call["wl_proxy_destroy", NoneType](proxy)
 
 
-def wl_proxy_marshal_array(proxy: WLPtr, opcode: UInt32, args: Pointer[WLArgument, MutUntrackedOrigin]):
+def wl_proxy_marshal_array(
+    proxy: WLPtr, opcode: UInt32, args: Pointer[WLArgument, MutUntrackedOrigin]
+):
     external_call["wl_proxy_marshal_array", NoneType](proxy, opcode, args)
 
 
-def wl_proxy_marshal_array_constructor_versioned(proxy: WLPtr, opcode: UInt32, args: Pointer[WLArgument, MutUntrackedOrigin], iface: WLPtr, version: UInt32) -> WLPtr:
-    return external_call["wl_proxy_marshal_array_constructor_versioned", WLPtr](proxy, opcode, args, iface, version)
+def wl_proxy_marshal_array_constructor_versioned(
+    proxy: WLPtr,
+    opcode: UInt32,
+    args: Pointer[WLArgument, MutUntrackedOrigin],
+    iface: WLPtr,
+    version: UInt32,
+) -> WLPtr:
+    return external_call["wl_proxy_marshal_array_constructor_versioned", WLPtr](
+        proxy, opcode, args, iface, version
+    )
 
 
-def wl_proxy_marshal_array_flags(proxy: WLPtr, opcode: UInt32, args: Pointer[WLArgument, MutUntrackedOrigin], iface: WLPtr, version: UInt32, flags: UInt32) -> WLPtr:
-    return external_call["wl_proxy_marshal_array_flags", WLPtr](proxy, opcode, args, iface, version, flags)
+def wl_proxy_marshal_array_flags(
+    proxy: WLPtr,
+    opcode: UInt32,
+    args: Pointer[WLArgument, MutUntrackedOrigin],
+    iface: WLPtr,
+    version: UInt32,
+    flags: UInt32,
+) -> WLPtr:
+    return external_call["wl_proxy_marshal_array_flags", WLPtr](
+        proxy, opcode, args, iface, version, flags
+    )
 
 
 def wl_proxy_add_listener(proxy: WLPtr, listener: WLPtr, data: WLPtr) -> Int32:
@@ -183,15 +228,15 @@ def wl_array_add(arr: WLPtr, size: Int) -> WLPtr:
 # wl_argument mirror (8 bytes on x86_64). Byte buffer with typed constructors;
 # layout matches wayland-client's union EXACTLY.
 struct WLArgument(Copyable, Movable):
-    var raw: InlineArray[Byte, 8]
+    var raw: Array[Byte, 8]
 
     def __init__(out self):
-        self.raw = InlineArray[Byte, 8](uninitialized=True)
+        self.raw = Array[Byte, 8](uninitialized=True)
         for i in range(8):
             self.raw[i] = Byte(0)
 
     def __copyinit__(mut self, existing: Self):
-        self.raw = InlineArray[Byte, 8](uninitialized=True)
+        self.raw = Array[Byte, 8](uninitialized=True)
         for i in range(8):
             self.raw[i] = existing.raw[i]
 
@@ -216,7 +261,9 @@ struct WLArgument(Copyable, Movable):
     @staticmethod
     def make_i(value: Int32) -> Self:
         var a = Self()
-        var bp = Pointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(a.raw.unsafe_ptr()))
+        var bp = Pointer[Byte, MutUntrackedOrigin](
+            unsafe_from_address=Int(a.raw.unsafe_ptr())
+        )
         Self.store32(bp, 0, value)
         return a.copy()
 
@@ -224,7 +271,9 @@ struct WLArgument(Copyable, Movable):
     def make_u(value: UInt32) -> Self:
         var a = Self()
         var bits: UInt = UInt(value)
-        var bp = Pointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(a.raw.unsafe_ptr()))
+        var bp = Pointer[Byte, MutUntrackedOrigin](
+            unsafe_from_address=Int(a.raw.unsafe_ptr())
+        )
         Self.store32(bp, 0, Int32(bits))
         return a.copy()
 
@@ -257,6 +306,8 @@ struct WLArgument(Copyable, Movable):
     @staticmethod
     def _from_ptr(val: UInt) -> Self:
         var a = Self()
-        var bp = Pointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(a.raw.unsafe_ptr()))
+        var bp = Pointer[Byte, MutUntrackedOrigin](
+            unsafe_from_address=Int(a.raw.unsafe_ptr())
+        )
         Self.store64(bp, 0, val)
         return a.copy()

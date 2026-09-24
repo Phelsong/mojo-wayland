@@ -321,6 +321,7 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
                 tag = TYPE_MAP[(a.type, a.interface is not None)][1]
                 lines.append(f"{body_indent}args_array[unsafe_offset={m}] = WLArgument.make_{tag}({a.name})")
                 m += 1
+
             lines.append(f"{body_indent}args_array[unsafe_offset={len(non_new)}] = WLArgument.make_s(iface_name)")
             lines.append(f"{body_indent}args_array[unsafe_offset={len(non_new) + 1}] = WLArgument.make_u(version)")
             lines.append(f"{body_indent}return wl_proxy_marshal_array_constructor_versioned(self, {op}, args_array, iface, version)")

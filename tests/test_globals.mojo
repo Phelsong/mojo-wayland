@@ -87,13 +87,21 @@ def main() raises:
         count += 1
         var iface_name = arg_as_string(args[1])
         print(
-            "global", count, ":",
+            "global",
+            count,
+            ":",
             iface_name,
-            "name =", arg_as_uint(args[0]),
-            "version =", arg_as_int(args[2]),
+            "name =",
+            arg_as_uint(args[0]),
+            "version =",
+            arg_as_int(args[2]),
         )
         # rebuild the byte pointer for free (shim hands back malloc'd copies)
-    _shim_string_free(UnsafePointer[Byte, MutUntrackedOrigin](unsafe_from_address=Int(arg_as_cptr(args[1]))))
+    _shim_string_free(
+        UnsafePointer[Byte, MutUntrackedOrigin](
+            unsafe_from_address=Int(arg_as_cptr(args[1]))
+        )
+    )
     print("globals received:", count)
 
     # roundtrip to prove the request path works
