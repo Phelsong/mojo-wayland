@@ -7,7 +7,7 @@ package:
 
 source:
   - git: https://github.com/Phelsong/mojo-wayland.git
-    rev: 3c71de25abbd4ee00bee6546cc6d562929490b9d
+    rev: 98cb6fc1958b8d074667c0ac60856c2f1f7fe9ba
 
 build:
   number: 0

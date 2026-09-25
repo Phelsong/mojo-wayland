@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "mojo-wayland"
 version = "1.1.0"
 description = "Mojo bindings for libwayland-client, generated from protocol XML"
@@ -136,3 +136,8 @@ pack = { cmd = "bash scripts/pack.sh", depends-on = ["update-version"] }
 # external_call resolves shim symbols at load time, so the shim DSO must be
 # linked into the test binary (-Xlinker); LD_PRELOAD does not reach the JIT.
 test-pack = """mojo run -Xlinker $PWD/dist/libwayland_shim.so -I $PWD/dist tests/test_pack.mojo"""
+
+# Copy the packaging files into the modular-community feedstock checkout.
+sync-recipe = "mkdir -p ../modular-community/recipes/mojo-wayland && cp tests/recipe.yaml ../modular-community/recipes/mojo-wayland/recipe.yaml && cp tests/test_pack.mojo ../modular-community/recipes/mojo-wayland/test_pack.mojo"
+
+test-build = { cmd = "rattler-build build --channel https://prefix.dev/modular-community --channel https://conda.modular.com/max --channel conda-forge --variant-config tests/variants.yaml --recipe tests/recipe.yaml" }
