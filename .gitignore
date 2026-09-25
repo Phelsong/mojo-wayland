@@ -2,3 +2,7 @@
 *.mojopkg
 *.mojoc
 __pycache__/
+# rattler-build artifacts
+output/
+# packed release artifacts (shipped via GitHub releases, as in mojo_csv)
+dist/*

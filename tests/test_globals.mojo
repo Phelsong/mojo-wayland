@@ -4,7 +4,7 @@
 # Flow: connect -> wl_display_get_registry -> registry_listen ->
 #       dispatch -> pop REGISTRY_GLOBAL_OP events -> print globals ->
 #       roundtrip -> disconnect
-from std.ffi import CStringSlice
+from std.ffi import CStringSpan
 from wayland.core import (
     WLPtr,
     WLArgument,
@@ -34,15 +34,15 @@ def arg_as_string(a: WLArgument) -> String:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    var ptr = UnsafePointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
-    return String(CStringSlice(unsafe_from_ptr=ptr))
+    var ptr = Pointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
+    return String(CStringSpan(unsafe_from_ptr=ptr))
 
 
-def arg_as_cptr(a: WLArgument) -> UnsafePointer[Int8, MutUntrackedOrigin]:
+def arg_as_cptr(a: WLArgument) -> Pointer[Int8, MutUntrackedOrigin]:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    return UnsafePointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
+    return Pointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
 
 
 def arg_as_uint(a: WLArgument) -> UInt32:
@@ -68,13 +68,13 @@ def main() raises:
         wl_display_disconnect(display)
         raise Error("get_registry failed")
 
-    # out-queue handle: shim writes the queue pointer into queue_buf[0]
+    # out-queue handle: shim writes the queue pointer into queue_buf[unsafe_offset=0]
     var queue_buf = stack_allocation[1, WLPtr]()
     var rc = wl_registry_listen(registry, queue_buf)
     if rc != 0:
         wl_display_disconnect(display)
         raise Error("registry_listen failed rc=" + String(rc))
-    var queue = queue_buf[0]
+    var queue = queue_buf[unsafe_offset=0]
     print("listener installed")
 
     # dispatch once: server sends the initial globals burst
@@ -85,21 +85,21 @@ def main() raises:
     var count = 0
     while wl_registry_next_global(queue, args):
         count += 1
-        var iface_name = arg_as_string(args[1])
+        var iface_name = arg_as_string(args[unsafe_offset=1])
         print(
             "global",
             count,
             ":",
             iface_name,
             "name =",
-            arg_as_uint(args[0]),
+            arg_as_uint(args[unsafe_offset=0]),
             "version =",
-            arg_as_int(args[2]),
+            arg_as_int(args[unsafe_offset=2]),
         )
         # rebuild the byte pointer for free (shim hands back malloc'd copies)
     _shim_string_free(
-        UnsafePointer[Byte, MutUntrackedOrigin](
-            unsafe_from_address=Int(arg_as_cptr(args[1]))
+        Pointer[Byte, MutUntrackedOrigin](
+            unsafe_from_address=Int(arg_as_cptr(args[unsafe_offset=1]))
         )
     )
     print("globals received:", count)

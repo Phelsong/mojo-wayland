@@ -5,7 +5,7 @@
 #   -> create surface -> xdg surface -> toplevel -> wait configure -> ack
 #   -> memfd + wl_shm pool -> ARGB8888 gradient buffer -> attach/damage/commit
 #   -> dispatch loop (answers xdg ping) until closed by compositor.
-from std.ffi import external_call, CStringSlice
+from std.ffi import external_call, CStringSpan
 
 from wayland.core import (
     WLPtr,
@@ -97,19 +97,19 @@ comptime STRIDE = WIDTH * 4
 comptime POOL_SIZE = STRIDE * HEIGHT
 
 
-def str_to_cptr(s: String) -> UnsafePointer[Int8, MutUntrackedOrigin]:
+def str_to_cptr(s: String) -> Pointer[Int8, MutUntrackedOrigin]:
     """NUL-terminated heap copy of a Mojo String (leaked — test lifetime)."""
-    # copy into a mutable local so as_c_string_slice is usable
+    # copy into a mutable local so as_c_string_span is usable
     var tmp: String = s
-    var cs = tmp.as_c_string_slice()
+    var cs = tmp.as_c_string_span()
     var n = len(cs)
-    var buf = UnsafePointer[Int8, MutUntrackedOrigin](
+    var buf = Pointer[Int8, MutUntrackedOrigin](
         unsafe_from_address=Int(_malloc(Int(n) + 1))
     )
     var bytes = tmp.as_bytes()
     for i in range(len(bytes)):
-        buf[i] = Int8(bytes[i])
-    buf[len(bytes)] = Int8(0)
+        buf[unsafe_offset=i] = Int8(bytes[i])
+    buf[unsafe_offset=len(bytes)] = Int8(0)
     return buf
 
 
@@ -121,15 +121,15 @@ def arg_as_string(a: WLArgument) -> String:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    var ptr = UnsafePointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
-    return String(CStringSlice(unsafe_from_ptr=ptr))
+    var ptr = Pointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
+    return String(CStringSpan(unsafe_from_ptr=ptr))
 
 
-def arg_as_cptr(a: WLArgument) -> UnsafePointer[Byte, MutUntrackedOrigin]:
+def arg_as_cptr(a: WLArgument) -> Pointer[Byte, MutUntrackedOrigin]:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    return UnsafePointer[Byte, MutUntrackedOrigin](unsafe_from_address=addr)
+    return Pointer[Byte, MutUntrackedOrigin](unsafe_from_address=addr)
 
 
 def arg_as_uint(a: WLArgument) -> UInt32:
@@ -159,11 +159,14 @@ def find_global(
     var args = stack_allocation[MAX_EVENT_ARGS, WLArgument]()
     while True:
         while wl_registry_next_global(queue, args):
-            var iface_name = arg_as_string(args[1])
+            var iface_name = arg_as_string(args[unsafe_offset=1])
             var is_want = iface_name == want
-            free_string_arg(args[1])
+            free_string_arg(args[unsafe_offset=1])
             if is_want:
-                return GlobalInfo(arg_as_uint(args[0]), arg_as_uint(args[2]))
+                return GlobalInfo(
+                    arg_as_uint(args[unsafe_offset=0]),
+                    arg_as_uint(args[unsafe_offset=2]),
+                )
         var n = wl_display_dispatch(display)
         if n <= 0:
             raise Error("dispatch failed while waiting for " + want)
@@ -171,13 +174,13 @@ def find_global(
 
 def store_pixel(base: WLPtr, offset: Int, r: UInt8, g: UInt8, b: UInt8):
     # ARGB8888 little-endian: B, G, R, X byte order in memory
-    var p = UnsafePointer[UInt8, MutUntrackedOrigin](
+    var p = Pointer[UInt8, MutUntrackedOrigin](
         unsafe_from_address=Int(base) + offset
     )
-    p[0] = b
-    p[1] = g
-    p[2] = r
-    p[3] = 255
+    p[unsafe_offset=0] = b
+    p[unsafe_offset=1] = g
+    p[unsafe_offset=2] = r
+    p[unsafe_offset=3] = 255
 
 
 def paint_gradient(base: WLPtr):
@@ -199,7 +202,7 @@ def main() raises:
     var queue_buf = stack_allocation[1, WLPtr]()
     if wl_registry_listen(registry, queue_buf) != 0:
         raise Error("registry_listen failed")
-    var reg_queue = queue_buf[0]
+    var reg_queue = queue_buf[unsafe_offset=0]
 
     # collect globals
     var comp_info = find_global(reg_queue, display, "wl_compositor")
@@ -252,8 +255,8 @@ def main() raises:
         raise Error("xdg_surface_listen failed")
     if xdg_toplevel_listen(toplevel, qt_buf) != 0:
         raise Error("xdg_toplevel_listen failed")
-    var xs_queue = qs_buf[0]
-    var top_queue = qt_buf[0]
+    var xs_queue = qs_buf[unsafe_offset=0]
+    var top_queue = qt_buf[unsafe_offset=0]
 
     # initial commit: triggers the configure handshake
     wl_surface_commit(surface)
@@ -276,7 +279,7 @@ def main() raises:
     var sargs = stack_allocation[MAX_EVENT_ARGS, WLArgument]()
     var serial: UInt32 = 0
     while xdg_surface_next_configure(xs_queue, sargs):
-        serial = arg_as_uint(sargs[0])
+        serial = arg_as_uint(sargs[unsafe_offset=0])
     if serial != 0:
         xdg_surface_ack_configure(xdg_surface, serial)
     _ = wl_display_roundtrip(display)
@@ -306,7 +309,7 @@ def main() raises:
     var wm_queue_buf = stack_allocation[1, WLPtr]()
     if xdg_wm_base_listen(wm_base, wm_queue_buf) != 0:
         raise Error("xdg_wm_base_listen failed")
-    var wm_queue = wm_queue_buf[0]
+    var wm_queue = wm_queue_buf[unsafe_offset=0]
     var wargs = stack_allocation[MAX_EVENT_ARGS, WLArgument]()
     # NOTE: must be MAX_EVENT_ARGS — the shim's pop zeroes SHIM_MAX_ARGS
     # (16) entries unconditionally; a 1-entry buffer overflows the stack.
@@ -317,7 +320,7 @@ def main() raises:
         loops += 1
         # answer pings (else compositor kills us after ~10s)
         while xdg_wm_base_next_ping(wm_queue, ping_args):
-            xdg_wm_base_pong(wm_base, arg_as_uint(ping_args[0]))
+            xdg_wm_base_pong(wm_base, arg_as_uint(ping_args[unsafe_offset=0]))
         # drain configure events (reconfigure: keep current size)
         while xdg_toplevel_next_configure(top_queue, wargs):
             pass

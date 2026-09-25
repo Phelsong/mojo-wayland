@@ -1,6 +1,53 @@
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2026 Josh S Wilkinson
 # This file is NOT regenerated.
+#
+# ============================================================================
+# MAINTENANCE — wayland/core.mojo
+# ============================================================================
+# This module is the hand-written runtime under the generated bindings. Three
+# contracts must stay in sync or things break silently:
+#
+# 1. [SYNC:bindgen] Export list vs scripts/wayland_bindgen.py
+#    Both HEADER (in the generator) and emit_interface_module import a fixed
+#    name list from this module (WLPtr, WLArgument, WLString, MAX_EVENT_ARGS,
+#    _cstr, _shim_listen, _shim_event_pop, _shim_string_free,
+#    _proxy_constructor_versioned, wl_proxy_marshal_array, ..._constructor_
+#    versioned, wl_proxy_destroy). Renaming anything here breaks every
+#    `pixi run gen` regeneration; keep both import lines identical.
+#
+# 2. [SYNC:shim] MAX_EVENT_ARGS (16) vs SHIM_MAX_ARGS in wayland/c/shim.c
+#    The C dispatcher memsets SHIM_MAX_ARGS slots on every pop; event arg
+#    buffers allocated on the Mojo side MUST be MAX_EVENT_ARGS entries
+#    (stack_allocation[MAX_EVENT_ARGS, WLArgument]()). Changing one constant
+#    without the other overflows stack buffers at runtime.
+#
+# 3. [SYNC:abi] WLArgument layout vs union wl_argument (wayland-util.h)
+#    8 bytes on x86_64 and linux-aarch64 (both little-endian; sizeof
+#    verified == 8 per target). Int-width members occupy only 4 of the 8
+#    bytes. The byte-cell emulation relies on little-endian ordering —
+#    revisit store32/store64 if a big-endian target ever matters.
+#
+# 4. [SYNC:minlib] Minimum libwayland-client version
+#    Every C symbol stubbed below (wl_proxy_marshal_array*,
+#    wl_proxy_marshal_array_constructor_versioned, wl_proxy_add_dispatcher,
+#    wl_proxy_get_version) has existed since wayland 1.10 (2016), so the
+#    practical floor is old. The conda recipe pins wayland >=1.23 only
+#    because that is the oldest version actually tested; relax/bump the pin
+#    only after checking a new stub's symbol introduction in
+#    wayland-client-core.h.
+#
+# Compiler-upgrade pointers (see also scripts/wayland_bindgen.py docstring):
+#   - external_call gotchas live at each stub below (zero-arg UB, void returns);
+#     VERIFIED STATUS on 1.1.0 (2026-09) lives at wl_display_connect below and
+#     in tests/test_ffi_probe.mojo (re-run those probes per upgrade).
+#   - Pointer origin spellings (MutUntrackedOrigin) come from std.memory and
+#     have been renamed between 1.0 and 1.1; WLPtr/WLString alias them here
+#     so generated code stays stable across renames.
+#   - `unsafe_offset=` kwarg indexing is REQUIRED for raw Pointer element
+#     stores past the derived bounds; plain p[i] fails the bounds check.
+#     Value-type Array[Byte, N] keeps ordinary bounds-checked arr[i].
+# ============================================================================
 from std.ffi import external_call
 from std.memory import stack_allocation
 
@@ -15,6 +62,7 @@ comptime WLPtr = MUT_PTR
 comptime WLString = Pointer[Byte, MutUntrackedOrigin]
 
 # Max protocol args of any single event across known protocols.
+# MUST equal SHIM_MAX_ARGS in wayland/c/shim.c (see [SYNC:shim] above).
 comptime MAX_EVENT_ARGS = 16
 
 
@@ -27,7 +75,9 @@ def _cstr(s: String) -> Pointer[Int8, MutUntrackedOrigin]:
 
 
 def _shim_interface(name: String) -> WLPtr:
-    """Resolve a wl_*_interface data symbol by name via the C shim."""
+    """Resolve a wl_*_interface data symbol by name via the C shim.
+    [COUPLING] the name must appear in SHIM_IFACE_ENTRIES in shim.c or the
+    shim returns NULL; _proxy_constructor_versioned raises on NULL here."""
     return external_call["wayland_shim_interface", WLPtr](_cstr(name))
 
 
@@ -109,6 +159,12 @@ def wl_display_connect(name: UInt64) -> WLPtr:
     # register (garbage or stack pointer), which libwayland treats as a
     # literal socket name — connect then fails depending on surrounding
     # codegen. Passing UInt64(0) = NULL name is the only safe form.
+    # [1.1-STATUS] re-verified 2026-09 on 1.1.0: bug PERSISTS (zero-arg
+    # connect fails while explicit-arg connects in the same env — see
+    # tests/test_ffi_probe.mojo). Also: two external_calls to the SAME
+    # symbol with DIFFERENT arities in one module fail LLVM lowering with
+    # "existing function with conflicting signature" — one signature per
+    # symbol per module, hence one hand-written stub per signature here.
     return external_call["wl_display_connect", WLPtr](name)
 
 
@@ -225,8 +281,14 @@ def wl_array_add(arr: WLPtr, size: Int) -> WLPtr:
     return external_call["wl_array_add", WLPtr](arr, size)
 
 
-# wl_argument mirror (8 bytes on x86_64). Byte buffer with typed constructors;
-# layout matches wayland-client's union EXACTLY.
+# wl_argument mirror (8 bytes on x86_64 and linux-aarch64, little-endian).
+# Byte buffer with typed constructors; layout matches wayland-client's union
+# EXACTLY.
+# [SYNC:abi] do not change the layout — see contract 3 in the header notes.
+# [USAGE] all four pointer-flavoured makers (s/o/n/a) store the raw bits;
+# the tag only matters to libwayland's signature-driven closure marshalling.
+# Unused by the current generator but kept for hand-written calls and future
+# protocols: make_f (Float64 -> wl_fixed int24.8), make_n, make_a.
 struct WLArgument(Copyable, Movable):
     var raw: Array[Byte, 8]
 

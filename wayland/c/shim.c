@@ -16,6 +16,50 @@
  * String args ('s') point into libwayland-owned memory that dies right after
  * dispatch returns; capture DEEP-COPIES them into malloc'd buffers handed to
  * Mojo. Mojo owns the copy and must free it via wayland_shim_string_free.
+ *
+ * ============================================================================
+ * MAINTENANCE — wayland/c/shim.c
+ * ============================================================================
+ * Contracts with the Mojo side (all three are duplicated as [SYNC:*] notes in
+ * wayland/core.mojo):
+ *
+ *   [SYNC:shim] SHIM_MAX_ARGS (16) == MAX_EVENT_ARGS in wayland/core.mojo.
+ *       The pop path memsets out_args[0..SHIM_MAX_ARGS) unconditionally, so a
+ *       shorter Mojo-side stack buffer overflows. Bump both together; also
+ *       check the largest event arg count in any generated protocol first —
+ *       16 covers core + xdg-shell, but tablet/tablet-v2 events go higher.
+ *
+ *   [SYNC:iface] SHIM_IFACE_ENTRIES must list every interface name the
+ *       generated bindings may pass to wayland_shim_interface(). Missing
+ *       names return NULL -> Mojo raises "unknown interface". Interfaces NOT
+ *       exported by libwayland-client (all of xdg-shell) additionally need
+ *       their wayland-scanner private-code object linked INTO this DSO (see
+ *       the `scanner` + `shim` pixi tasks); libwayland-exported ones resolve
+ *       via the extern declarations.
+ *
+ *   [SYNC:abi] the four exported wayland_shim_* signatures are called via
+ *       Mojo external_call with a hand-maintained stub per function in
+ *       wayland/core.mojo — renaming/reordering parameters breaks at runtime,
+ *       not compile time (no cross-language type checking). external_call
+ *       quirks (verified on 1.1.0, see tests/test_ffi_probe*.mojo): zero-arg
+ *       calls are unsafe (undefined first register); two calls to the same
+ *       symbol with different arities in one module fail LLVM lowering —
+ *       hence the shim exposes exactly one signature per entry point.
+ *
+ * Known lifetimes / leaks (by design, documented):
+ *   - Shim queues (calloc in wayland_shim_listen) are never freed: queue
+ *     handles stay valid for the process lifetime. A queue_free entry point
+ *     is straightforward to add if long-lived apps churn many proxies.
+ *   - Undelivered events left in a queue at disconnect are freed with the
+ *     event's string copies in the pop loop; events never popped still leak
+ *     their string copies (bounded: one per pending event).
+ *
+ * Style/build notes:
+ *   - Fully static interface resolution (no dlopen/dlsym) so two
+ *     libwayland-client copies in one process can never desynchronize;
+ *     see the comment above SHIM_IFACE_ENTRIES.
+ *   - Built with -Wall and zero warnings; keep it that way.
+ * ============================================================================
  */
 #define _GNU_SOURCE
 #include <pthread.h>
@@ -77,7 +121,9 @@ void *wayland_shim_interface(const char *name)
 {
     /* Generated code passes the protocol interface name ("wl_registry");
      * the C symbol is that name plus the "_interface" suffix. */
-    char buf[64];
+    char buf[64]; /* [SYNC:iface] sized for the longest entry + "_interface";
+                     SHIM_IFACE_ENTRIES growth must re-check this bound (the
+                     length guard below returns NULL, never overflows). */
     size_t n = strlen(name);
     if (n + sizeof("_interface") > sizeof(buf))
         return NULL;
@@ -93,7 +139,7 @@ void *wayland_shim_interface(const char *name)
 
 /* ---- captured event ---- */
 
-#define SHIM_MAX_ARGS 16
+#define SHIM_MAX_ARGS 16 /* [SYNC:shim] == MAX_EVENT_ARGS in core.mojo */
 
 typedef struct shim_event {
     struct shim_event *next;
@@ -123,7 +169,11 @@ static void queue_push(shim_queue_t *q, shim_event_t *ev)
     pthread_mutex_unlock(&g_lock);
 }
 
-/* Deep-copy args per the message signature, duplicating strings. */
+/* Deep-copy args per the message signature, duplicating strings.
+ * Signature walk skips wayland's numeric version qualifiers (digits after
+ * 'o'/'n') and the '?' nullable marker; both are metadata, not args.
+ * [SYNC:abi] out_args handed back to Mojo are consumed by the generated
+ * next_* accessors — slot order MUST match the wire signature order. */
 static void copy_args(shim_event_t *ev, const union wl_argument *src,
                       const char *signature)
 {
@@ -165,7 +215,8 @@ static int shim_dispatcher(const void *user_data, void *target,
 
 /* Mojo-facing: install the capture dispatcher. Returns 0 on success. The
  * returned handle (written to *out_queue) is the shim-queue pointer; pop
- * functions take it instead of the proxy so we never need proxy lookups. */
+ * functions take it instead of the proxy so we never need proxy lookups.
+ * [LEAK] the queue is intentionally never freed (see MAINTENANCE notes). */
 int wayland_shim_listen(void *proxy, const char *iface_name, void **out_queue)
 {
     (void)iface_name;

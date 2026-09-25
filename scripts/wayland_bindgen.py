@@ -4,44 +4,78 @@
 """wayland_bindgen.py — generate Mojo bindings for libwayland-client.
 
 Reads wayland protocol XML (core wayland.xml, or extension protocols like
-xdg-shell.xml) and emits:
+xdg-shell.xml) and emits Mojo modules under wayland/gen/:
 
-  - wayland/protocol/{protocol_name}_types.mojo   (enums/enums-as-consts + arg structs)
-  - wayland/protocol/{protocol_name}.mojo         (interface handles + request stubs)
-  - wayland/c/wayland_shim.h / wayland_shim.c     (thin C shim for event listeners)
+  wayland/gen/{protocol_name}.mojo   one module per protocol: event/enum
+                                     comptime constants + request stubs +
+                                     listen/next_{event} poll accessors
+  wayland/gen/__init__.mojo          package marker
+  wayland/__init__.mojo              re-exports core + every gen module
 
-Design notes (Mojo 1.0.0b2, verified against the compiler directly):
-  * libwayland-client only exports a small symbol set — per-interface request
-    functions (wl_surface_commit etc.) are header-inline. Requests therefore
-    lower to wl_proxy_marshal_array / wl_proxy_marshal_array_constructor_versioned
-    via Mojo `external_call` (proven working on this compiler).
-  * Opaque handles = Pointer[NoneType, MutUntrackedOrigin]; null check via Int(ptr)==0.
-  * Events: a C shim defines real wl_*_listener structs whose callbacks call
-    Mojo trampolines emitted into wayland/gen/listeners.mojo. This keeps the
-    unstable ABI out of Mojo entirely.
-  * Requests with new_id return a new handle; destructors (request name="destroy"
-    / wl_proxy_destroy) emit as `destroy()`.
+NOT generated (hand-written, do not emit from here):
+  wayland/core.mojo     runtime: external_call stubs, WLArgument, shim glue
+  wayland/c/shim.c      C shim: interface table + event capture dispatcher
+
+Pipeline (see section banners below):
+  1. PARSE     protocol XML -> dataclasses (Protocol > Interface > Request/Event/Enum)
+  2. MAP       xml arg types -> (Mojo type, wl_argument tag) via TYPE_MAP
+  3. EMIT      emit_request_stub / emit_interface_module -> Mojo source text
+  4. WRITE     gen/{name}.mojo + __init__.mojo under --out (default wayland/)
 
 Usage:
   python3 scripts/wayland_bindgen.py /usr/share/wayland/wayland.xml \
-      [--protocols /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ...]
-  Output: wayland/ (package) + build with `pixi run mojo package wayland -o wayland.mojopkg`.
+      [--out wayland] /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml ...
+  Then: pixi run build   (mojo precompile wayland)
+
+=======================================================================
+MAINTENANCE — updating generated code for a new Mojo version
+=======================================================================
+The generated .mojo files are pure text emitted from a handful of sites.
+When a compiler upgrade renames or restructures syntax, grep this file for
+the tagged marker  [SYNTAX]  — every such tag marks an emission site that
+may need editing, and the comment next to it names the Mojo construct.
+
+Checklist for a syntax migration (mirrors what happened for 1.0->1.1):
+  1. HEADER (below)                 - shared import line of wayland.core
+  2. emit_request_stub              - per-request lowering: stack_allocation,
+                                      unsafe_offset= kwarg, WLArgument.make_*
+                                      constructors, marshal/constructor calls
+  3. emit_interface_module          - comptime constant decls, listen/next_
+                                      accessor signatures (Pointer[...] types)
+  4. wayland/core.mojo              - hand-written; WLArgument constructors and
+                                      external_call stubs live here, updates
+                                      happen there NOT here
+After editing: pixi run gen && pixi run build && pixi run test-pack
+(the smoke test catches import/opcode breakage without a compositor).
+=======================================================================
+
+Lowering rules (requests, verified against libwayland-client ABI):
+  * libwayland-client exports no per-request symbols (wl_surface_commit etc.
+    are header-inline only). Requests lower to wl_proxy_marshal_array /
+    wl_proxy_marshal_array_constructor_versioned via Mojo `external_call`.
+  * Opaque handles = Pointer[NoneType, MutUntrackedOrigin]; null check via Int(ptr)==0.
+  * Requests with new_id return a new handle (constructor path); destructors
+    marshal then call wl_proxy_destroy.
+  * Closure args are indexed by WIRE-SIGNATURE POSITION, not dense-packed:
+    new_id keeps its slot, zeroed, for libwayland to fill.
 """
 
 from __future__ import annotations
 
 import argparse
 import os
-import sys
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
 # ----------------------------- type mapping -------------------------------
-# wayland.xml <arg type="..."> -> Mojo type expression. Verified against
-# libwayland-client ABI (wl_argument union in wayland-client-core.h).
+# [SYNTAX] wayland.xml <arg type="..."> -> Mojo type expression. The Mojo side
+# of this table (first tuple element) is what breaks on compiler upgrades:
+# e.g. UnsafePointer -> Pointer rename landed in 1.1.0. WLPtr/WLString are
+# aliases defined once in wayland/core.mojo — change them THERE, not here,
+# unless the alias form itself becomes invalid.
 
-MOJO_PTR = "Pointer[NoneType, MutUntrackedOrigin]"
+MOJO_PTR = "Pointer[NoneType, MutUntrackedOrigin]"  # [SYNTAX] opaque handle type
 
 # (xml type, interface attr present?) -> (mojo type, wl_argument tag)
 # wl_argument tags: i(int) u(uint) f(fixed) s(string) o(object) n(new_id) a(array) h(fd)
@@ -67,26 +101,19 @@ HEADER = '''# AUTO-GENERATED by scripts/wayland_bindgen.py — DO NOT EDIT.
 # SPDX-FileCopyrightText: 2026 Josh S Wilkinson
 # Derived from Wayland protocol XML (MIT); notices in wayland/c/generated/.
 # Source: {source}
-# Regenerate: pixi run wayland-gen
+# Regenerate: pixi run gen
+# [SYNTAX] import line: names imported from wayland.core must exist in the
+# hand-written runtime; if a core symbol is renamed, update BOTH sides.
 from wayland.core import WLPtr, WLArgument, WLString, MAX_EVENT_ARGS, _cstr, _shim_listen, _shim_event_pop, _shim_string_free, wl_proxy_marshal_array, wl_proxy_marshal_array_constructor_versioned, wl_proxy_destroy
+# [SYNTAX] std import: stack_allocation moved modules before (std.memory);
+# verify the module path against the target compiler's stdlib.
 from std.memory import stack_allocation
 '''
-
-# (The original core.mojo template constants — CORE_HEADER / WRAPPER_DEFS /
-#  ARGUMENT_UNION — were removed. core.mojo is hand-written; its live source is
-#  wayland/core.mojo. Do not re-add template writes to main(): regeneration has
-#  clobbered hand edits before.)
-
 
 
 # wl_argument is an 8-byte union on x86_64 (largest member is one pointer;
 # int members occupy only 4 of the 8-byte slot). Mojo side we express it as
 # an 8-byte cell so Mojo arrays can be passed straight into the C shim.
-
-
-def snake_to_camel(s: str) -> str:
-    parts = s.split("_")
-    return parts[0] + "".join(p.capitalize() for p in parts[1:])
 
 
 def snake(s: str) -> str:
@@ -217,25 +244,6 @@ def parse_protocol(path: str) -> Protocol:
 
 # ------------------------------ emission ---------------------------------
 
-def emit_arg_struct(name: str, args: List[Arg], doc: str) -> str:
-    """Emit a Mojo struct carrying event args (used by the listener shim path)."""
-    lines = [f"struct {name}:", f'    """{doc}"""', ""]
-    if not args:
-        lines.append("    comptime _empty = True")
-    for a in args:
-        mojo_ty, _tag = TYPE_MAP.get((a.type, a.interface is not None), (MOJO_PTR, "o"))
-        lines.append(f"    var {a.name}: {mojo_ty}")
-    lines.append("")
-    ctor_args = ", ".join(f"{a.name}: {TYPE_MAP.get((a.type, a.interface is not None), (MOJO_PTR,'o'))[0]}" for a in args) or ""
-    lines.append(f"    def __init__(out self{', ' + ctor_args if ctor_args else ''}):")
-    if args:
-        for a in args:
-            lines.append(f"        self.{a.name} = {a.name}")
-    else:
-        lines.append("        pass")
-    return "\n".join(lines) + "\n"
-
-
 def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
     """Emit a Mojo def for one request.
 
@@ -254,6 +262,8 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
             continue  # created by libwayland; not caller-supplied
         mojo_ty, _ = TYPE_MAP.get((a.type, a.interface is not None), (MOJO_PTR, "o"))
         args_sig.append(f"{a.name}: {mojo_ty}")
+    # [SYNTAX] param list: bare `self: WLPtr` (not a Mojo struct method —
+    # these are free functions taking the proxy handle as first arg).
     args_sig_str = "self: WLPtr" if not args_sig else "self: WLPtr, " + ", ".join(args_sig)
 
     new_id_args = [a for a in req.args if a.type == "new_id"]
@@ -261,6 +271,8 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
 
     body_indent = " " * 4
     if is_constructor:
+        # [SYNTAX] `raises ->` on ctors whose interface lookup can fail; the
+        # 1.1 compiler errors on raises placement, keep it before -> .
         ret = "WLPtr"
         if new_id_args[-1].interface:
             lines = [f"def {fn}({args_sig_str}) raises -> {ret}:"]
@@ -281,13 +293,21 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
             non_new_id = [a for a in req.args if a.type != "new_id"]
             lines.append(f"{body_indent}# opcode {op}: {req.name}, creates {last.interface}")
             lines.append(f"{body_indent}# slots follow wire-signature positions (new_id slot zeroed)")
+            # [SYNTAX] scratch array: stack_allocation[N, T]() from std.memory;
+            # 1.1 made element count a comptime bound (was Array[Byte, N]).
             lines.append(f"{body_indent}var args_array = stack_allocation[{max(1, len(req.args))}, WLArgument]()")
             for i, a in enumerate(req.args):
                 if a.type == "new_id":
                     continue  # slot stays zeroed; libwayland writes the new proxy id
                 tag = TYPE_MAP[(a.type, a.interface is not None)][1]
+                # [SYNTAX] out-of-bounds store uses the `unsafe_offset=` kwarg
+                # (introduced in 1.1.0; plain `args_array[i] =` fails bounds
+                # check at runtime for wire-position slots).
                 lines.append(f"{body_indent}args_array[unsafe_offset={i}] = WLArgument.make_{tag}({a.name})")
             version = int(iface.version or 1)
+            # [SYNTAX] constructor lowering: goes through the hand-written
+            # _proxy_constructor_versioned in wayland/core.mojo (resolves the
+            # wl_*_interface record via the C shim, then marshals versioned).
             lines.append(
                 f"{body_indent}return _proxy_constructor_versioned("
                 f'self, {op}, args_array, "{last.interface}", {version})'
@@ -322,6 +342,8 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
                 lines.append(f"{body_indent}args_array[unsafe_offset={m}] = WLArgument.make_{tag}({a.name})")
                 m += 1
 
+            # [SYNTAX] WLArgument.make_* constructors live in core.mojo
+            # (byte-poking into an 8-byte cell to mirror the wl_argument ABI).
             lines.append(f"{body_indent}args_array[unsafe_offset={len(non_new)}] = WLArgument.make_s(iface_name)")
             lines.append(f"{body_indent}args_array[unsafe_offset={len(non_new) + 1}] = WLArgument.make_u(version)")
             lines.append(f"{body_indent}return wl_proxy_marshal_array_constructor_versioned(self, {op}, args_array, iface, version)")
@@ -343,6 +365,8 @@ def emit_request_stub(iface: Interface, req: Request, proto_name: str) -> str:
     # plain request — same wire-position rule (new_id slots stay zeroed)
     lines = [f"def {fn}({args_sig_str}):"]
     lines.append(f"{body_indent}# opcode {op}")
+    # [SYNTAX] plain requests lower identically to destructors minus the
+    # trailing wl_proxy_destroy; same stack_allocation / unsafe_offset pattern.
     lines.append(f"{body_indent}var args_array = stack_allocation[{max(1, len(req.args))}, WLArgument]()")
     for i, a in enumerate(req.args):
         if a.type == "new_id":
@@ -358,17 +382,22 @@ def emit_interface_module(proto: Protocol) -> str:
     parts: List[str] = []
     parts.append("# AUTO-GENERATED — DO NOT EDIT.")
     parts.append(f"# from protocol '{proto.name}'")
+    # [SYNTAX] module import: must stay in sync with HEADER (same names); if
+    # wayland.core gains/loses symbols, update both HEADER and this line.
     parts.append(
         "from wayland.core import WLPtr, WLArgument, WLString, MAX_EVENT_ARGS, "
         "_cstr, _shim_listen, _shim_event_pop, _shim_string_free, _proxy_constructor_versioned, "
         "wl_proxy_marshal_array, "
         "wl_proxy_marshal_array_constructor_versioned, wl_proxy_destroy"
     )
+    # [SYNTAX] std import: stack_allocation module path (see HEADER note).
     parts.append("from std.memory import stack_allocation")
     parts.append("")
     for iface in proto.interfaces:
         parts.append(f"# ---- {iface.name} v{iface.version} ----")
         # event opcodes (used with the dispatcher shim)
+        # [SYNTAX] comptime constant: `comptime NAME: UInt32 = value`; UInt32
+        # annotation required — bare ints emit as Int and break make_u().
         for ev in iface.events:
             parts.append(f"comptime {snake(iface.name).upper().removeprefix('WL_')}_{ev.name.upper()}_OP: UInt32 = {ev.opcode}")
         if iface.events:
@@ -382,6 +411,9 @@ def emit_interface_module(proto: Protocol) -> str:
             parts.append(emit_request_stub(iface, req, proto.name))
             parts.append("")
         # event capture: listen + typed per-event poll/pop accessors
+        # [SYNTAX] out-param pattern: shim writes one pointer into a
+        # single-slot buffer, so the param is Pointer[WLPtr, MutUntrackedOrigin]
+        # (a pointer TO the slot), not the slot's value type.
         if iface.events:
             short = snake(iface.name)
             parts.append(
@@ -416,14 +448,10 @@ def emit_interface_module(proto: Protocol) -> str:
     return "\n".join(parts)
 
 
-def emit_c_shim(proto: Protocol) -> str:
-    """Emit the C listener shim. For each interface with events, emit:
-         - struct wl_{name}_listener_mojo with C fn pointers
-         - bridge callbacks that call Mojo trampolines (declared `extern Mojo`)
-    """
-    # The C side is protocol-specific; generated into wayland/c/shim.c
-    raise NotImplementedError
-
+# The C listener shim (wayland/c/shim.c) is hand-written and protocol-
+# INDEPENDENT: one generic capture dispatcher + one static interface table,
+# extended by editing SHIM_IFACE_ENTRIES / the scanner task when a new
+# protocol needs it. There is intentionally no per-protocol C emission here
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
@@ -438,13 +466,14 @@ def main() -> None:
     os.makedirs(out, exist_ok=True)
     os.makedirs(os.path.join(out, "gen"), exist_ok=True)
     # core.mojo is hand-written (see README) and deliberately NOT regenerated.
-    # Do not re-add a core.mojo write; regeneration has clobbered hand edits before.
+    # Do not re-add a core.mojo write; regeneration has clobbered hand edits
+    # before. Same policy keeps wayland/c/shim.c out of this generator.
     with open(os.path.join(out, "gen", f"{core.name}.mojo"), "w") as f:
         f.write(emit_interface_module(core))
     for extra in extras:
         with open(os.path.join(out, "gen", f"{extra.name}.mojo"), "w") as f:
             f.write(emit_interface_module(extra))
-    print(f"wrote {len(extras)+1} protocol module(s) under {out} (core.mojo untouched)")
+    print(f"wrote {len(extras)+1} protocol module(s) under {out}")
     # __init__.mojo files: package + gen subpackage
     with open(os.path.join(out, "gen", "__init__.mojo"), "w") as f:
         f.write("# AUTO-GENERATED — DO NOT EDIT.\n")

@@ -1,6 +1,6 @@
 [project]
 name = "mojo-wayland"
-version = "0.1.0"
+version = "1.1.0"
 description = "Mojo bindings for libwayland-client, generated from protocol XML"
 authors = ["Josh S Wilkinson <joshswilkinson@pm.me>"]
 license = "MIT"
@@ -10,13 +10,13 @@ channels = [
   "https://conda.modular.com/max-nightly",
   "https://prefix.dev/modular-community",
 ]
-platforms = ["linux-64"]
+platforms = ["linux-64", "linux-aarch64"]
 preview = ["pixi-build"]
 
 
 [package]
 name = "mojo-wayland"
-version = "0.1.0"
+version = "1.1.0"
 
 [package.build.backend]
 name = "pixi-build-mojo"
@@ -36,12 +36,47 @@ mojo = "==1.1.0"
 [package.run-dependencies]
 mojo = "==1.1.0"
 
-[dependencies]
-# Pin the same Mojo the library was written against; 1.1.0.dev renames
-# UnsafePointer -> Pointer, InlineArray import rules, etc.
-mojo = ">=1.1.0,<1.2.0"
+# ============================================================================
+# DEPENDENCY SPLIT: dev vs packaging (deployment) environments
+# ============================================================================
+# [envs.dev]        day-to-day work: gen/scanner/shim/build/live tests. System
+#                   deps (wayland, gcc, compositor) apply to specific tasks
+#                   only; format and the precompile step of build are headless.
+# [envs.packaging]  conda-package workflow: pack/test-pack/sync-recipe/
+#                   test-build. Adds rattler-build (conda-forge) on top of
+#                   everything dev has. System deps: gcc + coreutils (shim
+#                   step of pack); test-build needs only rattler-build.
+#
+# Host system deps by task (distro package names in the README):
+#   [system] gcc                - shim, pack (conda recipe uses ${{ compiler('c') }})
+#   [system] wayland-scanner    - scanner (ships with `wayland` / libwayland-dev)
+#   [system] protocol XMLs      - gen (wayland + wayland-protocols packages)
+#   [system] libwayland-client  - all test builds + shim (headers too)
+#   [system] Wayland compositor - live tests only (test-connect/globals/window,
+#                                 test_ffi_probe*)
+#   [system] sha256sum, awk     - pack (coreutils/gawk, present on any Linux)
+#
+# The conda package itself needs NONE of these on the consumer host: the
+# recipe builds in rattler-build's isolated env, and generated outputs are
+# committed under wayland/gen/ + wayland/c/generated/.
+# ============================================================================
+
+[dependencies] # [envs.dev] — the default environment
+# ATM a range like >=1.1.0,<1.2.0 admits pre-releases: conda orders
+# 1.2.0.devX < 1.2.0
+# Bump this pin deliberately when targeting a new stable compiler.
+mojo = "==1.1.0"
 python = ">=3.14.7,<3.15"
 # mojo-wayland = { path = "." }
+
+# The two envs MUST resolve the same Mojo build: a .mojoc produced by one
+# nightly is REJECTED by a different (even older) nightly. The packaging
+# env shares the dev env's solve-group so both lock the same compiler.
+[environments]
+packaging = { features = ["packaging"], solve-group = "default" }
+
+[feature.packaging.dependencies]
+rattler-build = ">=0.55,<1"
 
 [tasks]
 format = "mojo format . -q"
@@ -58,12 +93,18 @@ wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-
 # Build the C shim (event capture + interface table).
 shim = "mkdir -p .pixi/lib && gcc -shared -fPIC -O2 -Wall -o .pixi/lib/libwayland_shim.so wayland/c/shim.c wayland/c/generated/xdg-shell-protocol.c -lwayland-client"
 
+# Stamp the project version to match the compiler in use. Runs first in any
+# release pipeline (build + pack depend on it) — see scripts/update-version.sh.
+# Dev compilers skip silently; the checked-in version survives dev runs.
+update-version = "bash scripts/update-version.sh"
 
 # Package the Mojo side.
 build = { cmd = "mojo precompile wayland -I . -o .pixi/envs/default/lib/wayland.mojoc", depends-on = [
+  "scanner",
   "gen",
+  "shim",
+  "update-version",
 ] }
-
 
 # Tests (need a running Wayland compositor).
 test-connect = { cmd = "mojo build tests/test_connect.mojo -I . -o .pixi/test_connect -Xlinker -L.pixi/lib -Xlinker -L.pixi/envs/default/lib -Xlinker -lwayland_shim -Xlinker -lwayland-client && LD_LIBRARY_PATH=.pixi/lib:.pixi/envs/default/lib .pixi/test_connect", depends-on = [
@@ -79,3 +120,19 @@ test-window = { cmd = "mojo build tests/test_window.mojo -I . -o .pixi/test_wind
   "shim",
   "scanner",
 ] }
+
+# ---------------------------------------------------------------------------
+# Packaging/Archival tasks — run with `pixi run -e packaging <task>`
+# (they live in the packaging feature so rattler-build ships only there)
+# ---------------------------------------------------------------------------
+[feature.packaging.tasks]
+# Pack: build the C shim + mojo package into dist/ for release.
+# update-version (dev task, visible in this env too) runs FIRST: the stamped
+# version is what pack reads, builds against, and records in version.txt.
+# Refuses dev compilers — see scripts/pack.sh and the README Packaging note.
+pack = { cmd = "bash scripts/pack.sh", depends-on = ["update-version"] }
+
+# Smoke-test the packed artifacts headlessly (no compositor needed).
+# external_call resolves shim symbols at load time, so the shim DSO must be
+# linked into the test binary (-Xlinker); LD_PRELOAD does not reach the JIT.
+test-pack = """mojo run -Xlinker $PWD/dist/libwayland_shim.so -I $PWD/dist tests/test_pack.mojo"""
