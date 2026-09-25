@@ -1,5 +1,8 @@
 # mojo-wayland
 
+<!-- ![mojo_csv_logo](./mojo-wayland.jpeg) -->
+<image src='./mojo-wayland.jpeg' width='900'/>
+
 Mojo bindings for the Wayland client protocol, generated from the official
 protocol XML.
 

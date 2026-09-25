@@ -114,7 +114,7 @@ def str_to_cptr(s: String) -> Pointer[Int8, MutUntrackedOrigin]:
 
 
 def str_to_wlstring(s: String) -> WLString:
-    return str_to_cptr(s).bitcast[Byte]()
+    return str_to_cptr(s).unsafe_bitcast[Byte]()
 
 
 def arg_as_string(a: WLArgument) -> String:
@@ -265,7 +265,7 @@ def main() raises:
     # wait for toplevel configure
     var targs = stack_allocation[MAX_EVENT_ARGS, WLArgument]()
     var configured: Bool = False
-    for round in range(50):
+    for _ in range(50):
         while xdg_toplevel_next_configure(top_queue, targs):
             configured = True
             break
