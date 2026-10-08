@@ -104,7 +104,10 @@
     X(xdg_positioner_interface)                                                \
     X(xdg_surface_interface)                                                   \
     X(xdg_toplevel_interface)                                                  \
-    X(xdg_popup_interface)
+    X(xdg_popup_interface)                                                     \
+    /* xdg-decoration (unstable v1) */                                         \
+    X(zxdg_decoration_manager_v1_interface)                                    \
+    X(zxdg_toplevel_decoration_v1_interface)
 
 #define SHIM_DECLARE_IFACE(sym) extern const struct wl_interface sym;
 SHIM_IFACE_ENTRIES(SHIM_DECLARE_IFACE)
@@ -116,6 +119,7 @@ SHIM_IFACE_ENTRIES(SHIM_DECLARE_IFACE)
  * resolves within this DSO).  Include only the forward decls to reuse the
  * same symbol list in the lookup macro. */
 #include "generated/xdg-shell-client-protocol.h"
+#include "generated/xdg-decoration-client-protocol.h"
 
 void *wayland_shim_interface(const char *name)
 {
