@@ -66,19 +66,36 @@ comptime WLString = Pointer[Byte, MutUntrackedOrigin]
 comptime MAX_EVENT_ARGS = 16
 
 
-def _cstr(s: String) -> Pointer[Int8, MutUntrackedOrigin]:
-    """Null-terminated C char* view into a Mojo String (borrowed).
-    Copies internally so immutable callers are fine."""
-    var copy = String(s)
-    var cs = copy.as_c_string_span()
-    return rebind[Pointer[Int8, MutUntrackedOrigin]](cs)
+def _cstr(mut s: String) -> Pointer[Int8, MutUntrackedOrigin]:
+    """Null-terminated C char* view into a CALLER-OWNED mutable String.
+
+    [SYNC:bindgen] this helper exists so the bindgen's fixed import list
+    keeps compiling; the shims below do NOT call it (see the inline span
+    pattern in _shim_interface). If you call it: `s` must be a mutable
+    local whose frame outlives the C call the view is passed to
+    (as_c_string_span() may append the terminating NUL and can move the
+    buffer), and the call to _cstr MUST be hoisted out of any external_call
+    argument list - a mut-convention call inline in an external_call arg
+    list miscompiled under the app build (2026-10: registry queue handles
+    came back empty / binds sent global name 0; the inlined-span shape
+    passed the same binary end to end). Do NOT re-add an internal copy and
+    return a view into it: that view dies with this helper's frame
+    (use-after-return)."""
+    return rebind[Pointer[Int8, MutUntrackedOrigin]](s.as_c_string_span())
 
 
 def _shim_interface(name: String) -> WLPtr:
     """Resolve a wl_*_interface data symbol by name via the C shim.
     [COUPLING] the name must appear in SHIM_IFACE_ENTRIES in shim.c or the
-    shim returns NULL; _proxy_constructor_versioned raises on NULL here."""
-    return external_call["wayland_shim_interface", WLPtr](_cstr(name))
+    shim returns NULL; _proxy_constructor_versioned raises on NULL here.
+    Lifetime: the C-string view must outlive the external_call below, so
+    the name is re-owned in THIS frame (a view into a helper-local String
+    would die when that helper returns)."""
+    var owned = String(name)
+    var cs = owned.as_c_string_span()
+    return external_call["wayland_shim_interface", WLPtr](
+        rebind[Pointer[Int8, MutUntrackedOrigin]](cs)
+    )
 
 
 def _proxy_constructor_versioned(
@@ -117,9 +134,13 @@ def _shim_listen(
 ) -> Int32:
     """Install the capture dispatcher on a proxy. Returns 0 on success and
     writes the queue handle to out_queue (out param: the C side writes one
-    pointer, so this takes a single-slot buffer, not the slot's value)."""
+    pointer, so this takes a single-slot buffer, not the slot's value).
+    Lifetime: as in _shim_interface, the name is re-owned in this frame so
+    the C-string view outlives the external_call."""
+    var owned = String(iface_name)
+    var cs = owned.as_c_string_span()
     return external_call["wayland_shim_listen", Int32](
-        proxy, _cstr(iface_name), out_queue
+        proxy, rebind[Pointer[Int8, MutUntrackedOrigin]](cs), out_queue
     )
 
 

@@ -90,8 +90,17 @@ scanner = """mkdir -p wayland/c/generated && \
 wayland-scanner private-code /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml wayland/c/generated/xdg-shell-protocol.c && \
 wayland-scanner client-header /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml wayland/c/generated/xdg-shell-client-protocol.h"""
 
-# Build the C shim (event capture + interface table).
-shim = "mkdir -p .pixi/lib && gcc -shared -fPIC -O2 -Wall -o .pixi/lib/libwayland_shim.so wayland/c/shim.c wayland/c/generated/xdg-shell-protocol.c -lwayland-client"
+# Build the C shim (event capture + interface table). The xdg-decoration
+# private-code object MUST be linked in: shim.c's SHIM_IFACE_ENTRIES resolves
+# zxdg_*_interface by name, and libwayland-client does not export unstable
+# protocol interfaces (same reason the xdg-shell object is here).
+shim = """mkdir -p .pixi/lib && \
+gcc -shared -fPIC -O2 -Wall \
+  -o .pixi/lib/libwayland_shim.so \
+  wayland/c/shim.c \
+  wayland/c/generated/xdg-shell-protocol.c \
+  wayland/c/generated/xdg-decoration-protocol.c \
+  -lwayland-client"""
 
 # Stamp the project version to match the compiler in use. Runs first in any
 # release pipeline (build + pack depend on it) — see scripts/update-version.sh.
