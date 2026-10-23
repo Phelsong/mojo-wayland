@@ -1,6 +1,6 @@
 [workspace]
 name = "mojo-wayland"
-version = "1.1.0"
+version = "1.2.0"
 description = "Mojo bindings for libwayland-client, generated from protocol XML"
 authors = ["Josh S Wilkinson <joshswilkinson@pm.me>"]
 license = "MIT"
@@ -16,7 +16,7 @@ preview = ["pixi-build"]
 
 [package]
 name = "mojo-wayland"
-version = "1.1.0"
+version = "1.2.0"
 
 [package.build.backend]
 name = "pixi-build-mojo"
@@ -31,10 +31,10 @@ pkg = { name = "wayland", path = "wayland" }
 # The backend's build script runs `mojo precompile/package`, which needs the
 # compiler on PATH inside the isolated build env.
 [package.host-dependencies]
-mojo = "==1.1.0"
+mojo = "==1.2.0"
 
 [package.run-dependencies]
-mojo = "==1.1.0"
+mojo = "==1.2.0"
 
 # ============================================================================
 # DEPENDENCY SPLIT: dev vs packaging (deployment) environments
@@ -65,7 +65,7 @@ mojo = "==1.1.0"
 # ATM a range like >=1.1.0,<1.2.0 admits pre-releases: conda orders
 # 1.2.0.devX < 1.2.0
 # Bump this pin deliberately when targeting a new stable compiler.
-mojo = "==1.1.0"
+mojo = "==1.2.0"
 python = ">=3.14.7,<3.15"
 # mojo-wayland = { path = "." }
 

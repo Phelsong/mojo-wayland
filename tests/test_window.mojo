@@ -5,7 +5,7 @@
 #   -> create surface -> xdg surface -> toplevel -> wait configure -> ack
 #   -> memfd + wl_shm pool -> ARGB8888 gradient buffer -> attach/damage/commit
 #   -> dispatch loop (answers xdg ping) until closed by compositor.
-from std.ffi import external_call, CStringSpan
+from std.ffi import external_call, c_char, CStringSpan
 
 from wayland.core import (
     WLPtr,
@@ -117,12 +117,12 @@ def str_to_wlstring(s: String) -> WLString:
     return str_to_cptr(s).unsafe_bitcast[Byte]()
 
 
-def arg_as_string(a: WLArgument) -> String:
+def arg_as_string(a: WLArgument) raises -> String:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    var ptr = Pointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
-    return String(CStringSpan(unsafe_from_ptr=ptr))
+    var ptr = Pointer[c_char, MutUntrackedOrigin](unsafe_from_address=addr)
+    return String(from_utf8=CStringSpan(unsafe_from_ptr=ptr).as_bytes())
 
 
 def arg_as_cptr(a: WLArgument) -> Pointer[Byte, MutUntrackedOrigin]:

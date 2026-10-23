@@ -4,7 +4,7 @@
 # Flow: connect -> wl_display_get_registry -> registry_listen ->
 #       dispatch -> pop REGISTRY_GLOBAL_OP events -> print globals ->
 #       roundtrip -> disconnect
-from std.ffi import CStringSpan
+from std.ffi import c_char, CStringSpan
 from wayland.core import (
     WLPtr,
     WLArgument,
@@ -34,8 +34,12 @@ def arg_as_string(a: WLArgument) -> String:
     var addr = 0
     for i in range(8):
         addr = addr | (Int(a.raw[i]) << (8 * i))
-    var ptr = Pointer[Int8, MutUntrackedOrigin](unsafe_from_address=addr)
-    return String(CStringSpan(unsafe_from_ptr=ptr))
+    # 1.2: the pointer ctor takes Pointer[c_char] (ABI-defined signedness),
+    # and the byte→String conversion goes through the `from_utf8` kwarg
+    # (plain `String(bytes)` hits the Writable overload and renders the
+    # decimal byte list as text).
+    var ptr = Pointer[c_char, MutUntrackedOrigin](unsafe_from_address=addr)
+    return String(from_utf8=CStringSpan(unsafe_from_ptr=ptr).as_bytes())
 
 
 def arg_as_cptr(a: WLArgument) -> Pointer[Int8, MutUntrackedOrigin]:
