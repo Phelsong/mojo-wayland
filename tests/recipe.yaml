@@ -7,7 +7,7 @@ package:
 
 source:
   - git: https://github.com/Phelsong/mojo-wayland.git
-    rev: 0c474412f8a58b0da441a6dca1995e509d5a32a7
+    rev: ed4c201c56feafce9d1a3128d91ae14f9f3168f5
 
 build:
   number: 0
@@ -26,6 +26,7 @@ build:
         $CC $CFLAGS -I"$PREFIX/include" -shared -fPIC -O2 -Wall \
           -o "${PREFIX}/lib/libwayland_shim.so" \
           wayland/c/shim.c wayland/c/generated/xdg-shell-protocol.c \
+          wayland/c/generated/xdg-decoration-protocol.c \
           -L"$PREFIX/lib" -lwayland-client
         mkdir -p "${PREFIX}/lib/mojo"
         mojo precompile wayland -o "${PREFIX}/lib/mojo/wayland.mojoc"
@@ -41,10 +42,10 @@ requirements:
     # wayland/core.mojo.
     - wayland >=1.23,<1.27
   host:
-    - mojo-compiler ==1.1.0
+    - mojo-compiler ==1.2.0
     - wayland >=1.23,<1.27
   run:
-    - mojo-compiler ==1.1.0
+    - mojo-compiler ==1.2.0
     - wayland >=1.23,<1.27
 
 tests:
@@ -60,7 +61,7 @@ tests:
         - test_pack.mojo
     requirements:
       run:
-        - mojo-compiler ==1.1.0
+        - mojo-compiler ==1.2.0
 
 about:
   homepage: https://github.com/Phelsong/mojo-wayland

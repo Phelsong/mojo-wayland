@@ -50,6 +50,7 @@ esac
 mkdir -p dist
 gcc -shared -fPIC -O2 -Wall -o dist/libwayland_shim.so \
     wayland/c/shim.c wayland/c/generated/xdg-shell-protocol.c \
+    wayland/c/generated/xdg-decoration-protocol.c \
     -lwayland-client
 mojo precompile wayland -I . -o dist/wayland.mojoc
 sha256sum dist/wayland.mojoc | awk -F ' ' '{print $1}' > dist/wayland.mojoc.sha256sum
